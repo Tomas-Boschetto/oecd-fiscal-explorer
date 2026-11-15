@@ -417,11 +417,18 @@ function computeRows(){
 function totalRow(list){
   if(!list.length) return null;
   // money: sums. % of GDP: weighted by each country's GDP over the period.
-  const m=M(), w=r=>S.unit==="pct"?(r.gdp||0):1, W=list.reduce((a,r)=>a+w(r),0)||1, d=S.unit==="pct"?W:1;
-  const f=k=>list.reduce((a,r)=>a+(r[k]??0)*w(r),0)/d;
-  const t={c:"_avg",name:S.unit==="pct"?"All shown (GDP-weighted)":"All shown (total)",avg:true,rev:f("rev"),exp:f("exp"),bal:f("bal"),n:null,complete:true,
-    full:list.every(r=>r.full!=null)?f("full"):null,other:list.every(r=>r.other!=null)?f("other"):null,est:list.some(r=>r.est)};
-  t.parts=list.every(r=>r.parts)?Object.fromEntries(m.groups.map(g=>[g.k,list.reduce((a,r)=>a+r.parts[g.k]*w(r),0)/d])):null;
+  // Each figure uses only the countries that have it, so one country without detail doesn't blank the summary.
+  const m=M(), w=r=>S.unit==="pct"?(r.gdp||0):1;
+  const agg=(rows,get)=>{ if(!rows.length) return null; const W=rows.reduce((a,r)=>a+w(r),0)||1; return rows.reduce((a,r)=>a+get(r)*w(r),0)/(S.unit==="pct"?W:1); };
+  const has=k=>list.filter(r=>r[k]!=null);
+  const withFull=has("full"), withParts=list.filter(r=>r.parts);
+  const t={c:"_avg",name:S.unit==="pct"?"All shown (GDP-weighted)":"All shown (total)",avg:true,n:null,complete:true,
+    rev:agg(list,r=>r.rev),exp:agg(list,r=>r.exp),bal:agg(list,r=>r.bal),
+    full:agg(withFull,r=>r.full),other:agg(has("other"),r=>r.other),est:list.some(r=>r.est),
+    nFull:withFull.length,nParts:withParts.length,
+    // denominator for "share of all spending / revenue", over the same countries as the category total
+    fullBase:agg(withFull,r=>m.shareOf==="revenue"?r.rev:r.exp)};
+  t.parts=withParts.length?Object.fromEntries(m.groups.map(g=>[g.k,agg(withParts,r=>r.parts[g.k])])):null;
   setMain(t);
   return t;
 }
@@ -437,9 +444,9 @@ function render(){
   $("ctitle").textContent=`${m.title}${m.sub?"":" vs "+m.vs}, ${period} · ${unitLabel()}${cum?" (cumulative)":ys.length>1?" (period average)":""}`;
   const sm=$("summary");
   if(tot){
-    const shareBase=r=>m.shareOf==="revenue"?r.rev:r.exp;
+    const cov=n=>n<list.length?`${n} of ${list.length} countries with data`:tot.name;
     const tiles=m.sub
-      ?[[m.name,fmt(tot.full),tot.name],[`Share of all ${m.shareOf}`,shareBase(tot)?(tot.full/shareBase(tot)*100).toFixed(1)+"%":"–",tot.name],["Largest subcategory",largest(tot).v,largest(tot).name],["Countries",String(list.length),period+(ys.length>1?` (${ys.length} years)`:"")]]
+      ?[[m.name,fmt(tot.full),cov(tot.nFull)],[`Share of all ${m.shareOf}`,tot.full!=null&&tot.fullBase?(tot.full/tot.fullBase*100).toFixed(1)+"%":"–",cov(tot.nFull)],["Largest subcategory",largest(tot).v,largest(tot).name+(tot.nParts<list.length?` (${tot.nParts} countries with detail)`:"")],["Countries",String(list.length),period+(ys.length>1?` (${ys.length} years)`:"")]]
       :[["Spending",fmt(tot.exp),tot.name],["Revenue",fmt(tot.rev),tot.name],["Balance",fmt(tot.bal,true),`${list.filter(r=>r.bal<0).length} in deficit, ${list.filter(r=>r.bal>=0).length} in surplus`],["Countries",String(list.length),period+(ys.length>1?` (${ys.length} years)`:"")]];
     sm.innerHTML=tiles.map(([l,v,n])=>`<div class="stat"><span class="lbl">${esc(l)}</span><span class="v">${v}</span><span class="n">${esc(n)}</span></div>`).join("");
   } else sm.innerHTML="";
