@@ -1,5 +1,7 @@
 # OECD Fiscal Balance Explorer
 
+**Open the dashboard: https://tomas-boschetto.github.io/oecd-fiscal-explorer/** · Download the data: [`data/explorer_dataset.csv`](data/explorer_dataset.csv)
+
 An interactive dashboard and an open dataset comparing **general government spending, revenue and deficits** across
 OECD countries, 1995–2024, with a drill-down from main categories to subcategories:
 
@@ -17,6 +19,8 @@ The whole dashboard is one file, `index.html`, with the data built in. It runs o
 needs no server, account or installation.
 
 ## Use the dashboard
+
+Open it online at https://tomas-boschetto.github.io/oecd-fiscal-explorer/, or use it offline:
 
 1. Download the repository: **Code → Download ZIP** on GitHub, or `git clone https://github.com/Tomas-Boschetto/oecd-fiscal-explorer.git`.
 2. Open `index.html` in a browser.
