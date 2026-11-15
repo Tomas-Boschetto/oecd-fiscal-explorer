@@ -1,0 +1,5 @@
+# Source downloads (re-create with: python3 scripts/download_sources.py [--full])
+data/raw/
+.DS_Store
+__pycache__/
+*.pyc

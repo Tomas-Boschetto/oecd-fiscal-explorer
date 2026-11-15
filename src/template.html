@@ -1,0 +1,563 @@
+<meta charset="utf-8">
+<title>OECD Fiscal Balance Explorer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a ledger. Controls band on top, summary line, then one row per country:
+   name | stacked breakdown bar + thin comparison bar | balance column. */
+:root{
+  --bg:#f7f8f7; --panel:#ffffff; --fg:#141816; --fg2:#4b524e; --muted:#7a817c;
+  --line:#e3e6e3; --grid:#eceeec; --chip:#eef1ef; --accent:#1f5f4a; --accent-soft:#dbe9e3;
+  --ink-bar:#3d4541; --neg:#a33a32; --pos:#1f6b4a; --nodata:#c9cdca;
+  --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141716; --panel:#1b1f1d; --fg:#eef1ee; --fg2:#bfc6c1; --muted:#8d958f;
+  --line:#2c322f; --grid:#262b28; --chip:#242a27; --accent:#7cc7a6; --accent-soft:#21362d;
+  --ink-bar:#c9d0cb; --neg:#ec7d73; --pos:#6cc59a; --nodata:#454c48;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#0ca30c;--s7:#9085e9;--s8:#e66767;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141716; --panel:#1b1f1d; --fg:#eef1ee; --fg2:#bfc6c1; --muted:#8d958f;
+  --line:#2c322f; --grid:#262b28; --chip:#242a27; --accent:#7cc7a6; --accent-soft:#21362d;
+  --ink-bar:#c9d0cb; --neg:#ec7d73; --pos:#6cc59a; --nodata:#454c48;
+  --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#0ca30c;--s7:#9085e9;--s8:#e66767;
+  color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:baseline;justify-content:space-between}
+h1{font-family:var(--f-display);font-weight:600;font-size:26px;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.sub{color:var(--fg2);margin:0;max-width:70ch}
+.src{font-size:12px;color:var(--muted)}
+.src a{color:var(--accent)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.controls{display:grid;gap:12px}
+.crow{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:end}
+.field{display:grid;gap:4px;min-width:0}
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:500}
+select,button,input[type=range]{font:inherit;color:inherit}
+select{background:var(--chip);border:1px solid var(--line);border-radius:6px;padding:5px 8px;max-width:100%}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--chip)}
+.seg button{border:0;background:transparent;padding:5px 11px;cursor:pointer;color:var(--fg2)}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--panel);font-weight:500}
+.btn{border:1px solid var(--line);background:var(--chip);border-radius:6px;padding:5px 10px;cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+button:focus-visible,select:focus-visible,input:focus-visible,.chip:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.yearbox{display:flex;align-items:center;gap:8px}
+.yearbox input{width:220px;max-width:42vw;accent-color:var(--accent)}
+.yearval{font-family:var(--f-mono);font-weight:500;font-size:16px;min-width:3ch}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--chip);border-radius:999px;padding:3px 10px 3px 8px;cursor:pointer;font-size:13px;user-select:none}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip .sw{width:10px;height:10px;border-radius:3px;flex:none}
+.chip.off{opacity:.45}
+.chip.off .sw{background:transparent!important;outline:1.5px solid var(--muted);outline-offset:-1.5px}
+.chip.cty{font-family:var(--f-mono);font-size:12px;padding:2px 8px}
+.chip.cty:not(.off){background:var(--accent-soft);border-color:var(--accent)}
+details summary{cursor:pointer;color:var(--fg2);font-size:13px}
+details[open] summary{margin-bottom:8px}
+.groupbtns{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.check{display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--fg2);cursor:pointer}
+.check input{accent-color:var(--accent)}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.stat{background:var(--panel);padding:10px 14px;display:grid;gap:2px;min-width:0}
+.stat .v{font-family:var(--f-mono);font-size:20px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .n{font-size:12px;color:var(--muted)}
+@media (max-width:640px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--fg2);align-items:center}
+.legend .k{display:inline-flex;align-items:center;gap:6px}
+.legend .sw{width:12px;height:12px;border-radius:3px}
+.legend .thin{width:18px;height:4px;border-radius:2px;background:var(--ink-bar)}
+.charthead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;align-items:center}
+.charttitle{font-family:var(--f-display);font-size:18px;font-weight:600;margin:0}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+#chart{position:relative;min-width:0}
+#chart svg{display:block;width:100%;height:auto;overflow:visible}
+#chart text{font-family:var(--f-body);fill:var(--fg2);font-size:12px}
+#chart .axis text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+#chart .cname{fill:var(--fg)}
+#chart .avg .cname{font-weight:600}
+#chart .row:hover .hit,#chart .row.hl .hit{fill:var(--chip)}
+#chart .seg{cursor:pointer}
+#chart .seg:hover{opacity:.8}
+#chart .bval{font-family:var(--f-mono);font-size:11px;font-variant-numeric:tabular-nums}
+.tip{position:fixed;z-index:20;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.14);padding:10px 12px;font-size:12.5px;width:290px;max-width:calc(100vw - 24px)}
+.tip h4{margin:0 0 2px;font-size:14px;font-family:var(--f-display)}
+.tip .meta{color:var(--muted);font-size:11.5px;margin-bottom:6px}
+.tip table{width:100%;border-collapse:collapse}
+.tip td{padding:1.5px 0;vertical-align:top}
+.tip td.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:8px}
+.tip tr.tot td{border-top:1px solid var(--line);padding-top:4px;font-weight:600}
+.tip .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+.tablewrap{overflow-x:auto;max-height:640px;overflow-y:auto;border:1px solid var(--line);border-radius:8px}
+table.data{border-collapse:collapse;width:100%;font-size:12.5px}
+table.data th,table.data td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+table.data th:first-child,table.data td:first-child{text-align:left;position:sticky;left:0;background:var(--panel)}
+table.data thead th{position:sticky;top:0;background:var(--panel);font-weight:600;font-size:11.5px;color:var(--fg2);z-index:1}
+table.data td{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+table.data td:first-child{font-family:var(--f-body)}
+.empty{padding:40px 12px;text-align:center;color:var(--muted)}
+.notes{font-size:13.5px;line-height:1.6;color:var(--fg2);display:grid;gap:10px}
+.notes p{margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>OECD Fiscal Balance Explorer</h1>
+      <p class="sub">General government spending by function, revenue by source, and the resulting deficit or surplus. Pick a year or a period, then narrow countries and categories.</p>
+    </div>
+    <div class="src">Sources: OECD National Accounts (ch. 6, Tables 1, 11, 12), OECD Revenue Statistics; US detail from BEA and CMS. Retrieved 15 Nov 2026.<br>Data, code and method: <a href="https://github.com/Tomas-Boschetto/oecd-fiscal-explorer">github.com/Tomas-Boschetto/oecd-fiscal-explorer</a></div>
+  </header>
+
+  <section class="panel controls" aria-label="Chart settings">
+    <div class="crow">
+      <div class="field"><span class="lbl">Time</span>
+        <div class="seg" role="group" aria-label="Time mode"><button id="mSingle" aria-pressed="true">Single year</button><button id="mRange" aria-pressed="false">Period</button></div>
+      </div>
+      <div class="field" id="singleBox"><span class="lbl">Year</span>
+        <div class="yearbox"><input type="range" id="year" min="1995" max="2024" step="1" aria-label="Year"><span class="yearval" id="yearVal"></span>
+          <button class="btn" id="play" aria-label="Play through years">▶ Play</button></div>
+      </div>
+      <div class="field" id="rangeBox" hidden><span class="lbl">Period</span>
+        <div class="yearbox"><select id="from" aria-label="From year"></select><span>to</span><select id="to" aria-label="To year"></select></div>
+      </div>
+      <div class="field"><span class="lbl">Unit</span>
+        <select id="unit">
+          <option value="pct">% of GDP</option>
+          <option value="ppp">US$ billions (PPP)</option>
+          <option value="exc">US$ billions (exchange rates)</option>
+        </select>
+      </div>
+      <div class="field"><span class="lbl">Break down</span>
+        <div class="seg" role="group" aria-label="Breakdown"><button id="bSpend" aria-pressed="true">Spending</button><button id="bRev" aria-pressed="false">Revenue</button></div>
+      </div>
+      <div class="field" id="detailBox"><span class="lbl">Detail</span><select id="detail" aria-label="Detail level"></select></div>
+      <div class="field"><span class="lbl">Sort by</span><select id="sort"></select></div>
+    </div>
+    <div class="field"><span class="lbl" id="catLbl">Spending categories</span><div class="chips" id="cats"></div></div>
+    <details id="ctyDetails">
+      <summary>Countries: <span id="ctyCount"></span></summary>
+      <div class="groupbtns">
+        <button class="btn" data-g="oecd">All OECD</button><button class="btn" data-g="eu">EU members</button><button class="btn" data-g="g7">G7</button><button class="btn" data-g="nordic">Nordics</button><button class="btn" data-g="anglo">English-speaking</button><button class="btn" data-g="latam">Latin America</button><button class="btn" data-g="none">Clear</button>
+      </div>
+      <div class="chips" id="ctys"></div>
+      <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px 18px">
+        <label class="check"><input type="checkbox" id="partners"> Show non-OECD economies and EU / euro-area totals</label>
+      </div>
+    </details>
+    <div class="crow">
+      <label class="check"><input type="checkbox" id="complete" checked> Only countries with complete data for every year shown</label>
+      <label class="check"><input type="checkbox" id="showTable"> Show as table</label>
+    </div>
+  </section>
+
+  <div class="summary" id="summary"></div>
+
+  <section class="panel" style="display:grid;gap:10px">
+    <div class="charthead">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;min-width:0"><button class="btn" id="back" hidden>← All categories</button><h2 class="charttitle" id="ctitle"></h2></div>
+      <button class="btn" id="copy">Copy data as CSV</button>
+    </div>
+    <div class="legend" id="legend"></div>
+    <p class="note" id="cnote"></p>
+    <div id="chart"></div>
+    <div id="tableBox" hidden></div>
+  </section>
+
+  <section class="notes panel">
+    <p><b>How to read it.</b> The thick bar is the part you're breaking down (spending by function, or revenue by source). The thin dark bar under it is the other side (revenue, or spending). The column on the right is the balance, revenue minus spending: bars to the left are deficits, bars to the right surpluses.</p>
+    <p><b>Subcategories.</b> Use <i>Detail</i>, or click a coloured segment, to split any spending category into its COFOG subcategories (for example Health into hospitals, outpatient care, medical products, public health, R&amp;D and other). Subcategory views show only the breakdown, with each bar&#39;s total at its end; the balance is left out because a deficit can&#39;t be assigned to particular categories. Subcategories come from the OECD's detailed COFOG table and cover 37 countries. The United States doesn't report them, so its split is estimated (marked “est.”): health from the CMS National Health Expenditure Accounts (government-funded spending by type of service), the other categories from BEA government spending by function (NIPA table 3.16). The US totals per category stay the OECD figures; only the split is estimated, and BEA covers fewer lines (for example primary and secondary schooling are one line, shown under 9.1; defence, environment, housing and culture have no split).</p>
+    <p><b>Revenue subcategories.</b> Under Revenue, use <i>Detail</i> or click a segment to split a source: income taxes into personal, corporate and other; taxes on production into general consumption taxes (VAT plus retail sales taxes, so the US and Canada compare fairly with VAT countries), excise and customs, and other production taxes; social contributions by who pays; other revenue into sales and fees, interest, other property income, transfers and capital taxes. All come from the OECD government accounts (Table 12). Where those accounts don't split personal and corporate income tax (about half the countries, including the US), the split comes from OECD Revenue Statistics and is marked “est.”. The US has no VAT; its state and local sales taxes are counted with VAT under general consumption taxes, sized from OECD Revenue Statistics (marked “est.”).</p>
+    <p><b>Periods.</b> For a period, US$ figures are added up over all its years. % of GDP figures are the share of the period's combined GDP (a GDP-weighted average), so large and small years count in proportion.</p>
+    <p><b>Comparability.</b> All figures are general government (central, state, local and social security together), on the SNA 2008 basis. The breakdown by function (COFOG) sometimes doesn't add up exactly to total spending; the gap is spread across the categories in proportion (at most 2.4 points of GDP, usually under 0.5). "Other revenue" covers capital taxes, sales of goods and services, property income (e.g. Norway's oil fund returns) and transfers. Debt interest sits inside "General public services". Countries with no breakdown for a year show a grey bar.</p>
+    <p><b>Coverage.</b> Most OECD countries have complete data from 1995; Japan, Canada and some others end earlier than 2024. US$ PPP uses purchasing-power parities, which suits comparing real effort; exchange-rate US$ reflects market value.</p>
+  </section>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const DATA = __DATA__;
+/* ---------- categories ---------- */
+const SPEND = [
+  {k:"soc",name:"Social protection",codes:["f10"],fn:"10"},
+  {k:"hea",name:"Health",codes:["f07"],fn:"07"},
+  {k:"edu",name:"Education",codes:["f09"],fn:"09"},
+  {k:"gps",name:"General public services (incl. debt interest)",codes:["f01"],fn:"01"},
+  {k:"eco",name:"Economic affairs",codes:["f04"],fn:"04"},
+  {k:"def",name:"Defence",codes:["f02"],fn:"02"},
+  {k:"ord",name:"Public order and safety",codes:["f03"],fn:"03"},
+  {k:"oth",name:"Housing, environment, culture",codes:["f05","f06","f08"]}
+];
+const REV = [
+  {k:"inc",name:"Taxes on income and wealth"},
+  {k:"prd",name:"Taxes on production and imports (VAT etc.)"},
+  {k:"ssc",name:"Social contributions"},
+  {k:"oth",name:"Other revenue"}
+];
+const RSUB={
+  inc:[{k:"pit",name:"Personal income taxes"},{k:"cit",name:"Corporate income taxes"},{k:"oti",name:"Other taxes on income and wealth"}],
+  prd:[{k:"gct",name:"General consumption taxes (VAT and sales taxes)"},{k:"otp",name:"Excise, customs and other taxes on products"},{k:"opr",name:"Other taxes on production (e.g. business property, payroll)"}],
+  ssc:[{k:"sce",name:"Employers' contributions"},{k:"sch",name:"Employees' and self-employed contributions"},{k:"sci",name:"Imputed contributions"}],
+  oth:[{k:"sal",name:"Sales of goods and services, fees"},{k:"int",name:"Interest received"},{k:"pin",name:"Other property income (dividends, rents, royalties)"},{k:"trf",name:"Transfers received"},{k:"cpt",name:"Capital taxes (inheritance, gift)"},{k:"kot",name:"Other capital transfers"}]
+};
+const FUNCS={"01":"General public services","02":"Defence","03":"Public order and safety","04":"Economic affairs","05":"Environmental protection",
+  "06":"Housing and community amenities","07":"Health","08":"Recreation, culture and religion","09":"Education","10":"Social protection"};
+const LABELS=DATA.labels;
+/* Subcategory groups of one function: COFOG level-2 codes in code order. At most 8 colours, so a 9th code
+   (an R&D line) is folded into the function's n.e.c. line. */
+const SUB={};
+for(const fn of Object.keys(FUNCS)){
+  const codes=Object.keys(LABELS).filter(c=>c.length===4&&c.startsWith(fn)).sort();
+  let groups=codes.map(c=>({k:c,name:`${LABELS[c]} (${+fn}.${+c.slice(2)})`,codes:[c]}));
+  if(groups.length>8){
+    const rd=groups.find(g=>/^R&D/.test(LABELS[g.k])), nec=groups[groups.length-1];
+    groups=groups.filter(g=>g!==rd); nec.codes.push(rd.k); nec.name=`${LABELS[nec.k]} and R&D (${+fn}.${+nec.k.slice(2)}, ${+fn}.${+rd.k.slice(2)})`;
+  }
+  SUB[fn]=groups;
+}
+const OECD=["AUS","AUT","BEL","CAN","CHE","CHL","COL","CRI","CZE","DEU","DNK","ESP","EST","FIN","FRA","GBR","GRC","HUN","IRL","ISL","ISR","ITA","JPN","KOR","LTU","LUX","LVA","MEX","NLD","NOR","NZL","POL","PRT","SVK","SVN","SWE","TUR","USA"];
+const GROUPS={oecd:OECD,eu:["AUT","BEL","CZE","DEU","DNK","ESP","EST","FIN","FRA","GRC","HUN","IRL","ITA","LTU","LUX","LVA","NLD","POL","PRT","SVK","SVN","SWE"],
+  g7:["CAN","FRA","DEU","ITA","JPN","GBR","USA"],nordic:["DNK","FIN","ISL","NOR","SWE"],anglo:["AUS","CAN","GBR","IRL","NZL","USA"],latam:["CHL","COL","CRI","MEX"],none:[]};
+const NAMES=DATA.names; NAMES.CHN="China"; NAMES.EA="Euro area"; NAMES.EU="European Union";
+const IDX={}; for(const r of DATA.rows){(IDX[r.c]??={})[r.y]=r;}
+const ALL=Object.keys(IDX).sort((a,b)=>NAMES[a].localeCompare(NAMES[b]));
+const YEARS=[...new Set(DATA.rows.map(r=>r.y))].filter(y=>y>=1995&&y<=2024).sort((a,b)=>a-b);
+const MINY=YEARS[0], MAXY=YEARS[YEARS.length-1];
+
+/* ---------- state ---------- */
+const S={mode:"single",year:2023,from:2015,to:2023,unit:"pct",brk:"spend",detail:"main",rdetail:"main",sort:"total",
+  spend:SPEND.map(g=>g.k),rev:REV.map(g=>g.k),dsel:{},ctys:[...OECD],partners:false,complete:true,table:false};
+try{const s=JSON.parse(localStorage.getItem("fbx-state")||"null"); if(s&&typeof s==="object") Object.assign(S,s);}catch(e){}
+if(S.brk==="socp"){S.brk="spend";S.detail="10";}
+if(!S.dsel||typeof S.dsel!=="object") S.dsel={};
+if(S.detail!=="main"&&!FUNCS[S.detail]) S.detail="main";
+if(!S.rdetail||(S.rdetail!=="main"&&!RSUB[S.rdetail])) S.rdetail="main";
+function save(){try{localStorage.setItem("fbx-state",JSON.stringify(S));}catch(e){}}
+
+/* The current view: what the thick bar breaks down, and what the thin bar shows. */
+function M(){
+  if(S.brk==="rev"){
+    if(S.rdetail==="main") return {kind:"rev",groups:REV,title:"Revenue by source",other:"Total spending",catLbl:"Revenue sources",vs:"spending"};
+    const g=S.rdetail, nm=REV.find(x=>x.k===g).name;
+    return {kind:"rsub",sub:true,key:"r"+g,rg:g,name:nm,groups:RSUB[g],title:`${nm}: subcategories`,other:`Total ${nm.toLowerCase()}`,catLbl:`${nm}: subcategories`,vs:"",shareOf:"revenue",
+      estShort:g==="prd"?"sales taxes from OECD Revenue Statistics":"income-tax split from OECD Revenue Statistics",
+      estNote:g==="prd"
+        ?"Rows marked “est.” have sizeable retail sales or other general turnover taxes (for example US state and local sales taxes). National accounts book these with excise duties, so their size comes from OECD Revenue Statistics (latest available year carried forward up to two years) and is moved into general consumption taxes, next to VAT."
+        :"Rows marked “est.”: national accounts don't separate personal and corporate income tax for these countries (including the US), so the split comes from OECD Revenue Statistics and is applied to the national-accounts total."};
+  }
+  if(S.detail==="main") return {kind:"spend",groups:SPEND,title:"Spending by function",other:"Total revenue",catLbl:"Spending categories",vs:"revenue"};
+  const fn=S.detail, nm=FUNCS[fn];
+  return {kind:"sub",sub:true,key:fn,fn,name:nm,groups:SUB[fn],title:`${nm}: subcategories`,other:`Total ${nm.toLowerCase()}`,catLbl:`${nm} subcategories (COFOG ${+fn}.x)`,vs:"",shareOf:"spending",
+    estShort:"US split estimated from "+(fn==="07"?"CMS":"BEA"),
+    estNote:`United States: the ${nm.toLowerCase()} total is the OECD figure, but the US does not report subcategories, so the split is estimated from ${fn==="07"?"CMS National Health Expenditure Accounts (government-funded spending by type of service)":"BEA government spending by function (NIPA table 3.16)"} and covers fewer lines.`};
+}
+function SEL(){
+  const m=M();
+  if(m.kind==="rev") return S.rev; if(m.kind==="spend") return S.spend;
+  return S.dsel[m.key] ??= m.groups.map(g=>g.k);
+}
+function setSel(arr){ const m=M(); if(m.kind==="rev") S.rev=arr; else if(m.kind==="spend") S.spend=arr; else S.dsel[m.key]=arr; }
+
+/* ---------- data per country-year (values in % of GDP) ---------- */
+const NEED=["f01","f02","f03","f04","f06","f07","f08","f09","f10"];
+function yearParts(r){
+  if(!r||r.rev==null||r.exp==null) return null;
+  const o={rev:r.rev,exp:r.exp,bal:r.bal??(r.rev-r.exp),spend:null,revp:null,fn:{},sub:{},rsub:{},est:[...(r.est||[]),...(r.inc_est?["rinc"]:[]),...(r.prd_est?["rprd"]:[])],gdp:{ppp:r.gdp_ppp,exc:r.gdp_exc}};
+  if(NEED.every(c=>r[c]!=null)){
+    // The function split can differ slightly from total spending; scale it so it adds up.
+    let sum=0; for(const fn in FUNCS) sum+=r["f"+fn]??0;
+    const f=sum>0?r.exp/sum:1;
+    for(const fn in FUNCS) o.fn[fn]=(r["f"+fn]??0)*f;
+    o.spend={}; for(const g of SPEND) o.spend[g.k]=g.codes.reduce((a,c)=>a+o.fn[c.slice(1)],0);
+    if(r.l2) for(const fn in FUNCS){
+      const groups=SUB[fn]; let s=0; const raw={};
+      for(const g of groups){ raw[g.k]=g.codes.reduce((a,c)=>a+Math.max(0,r.l2[c]??0),0); s+=raw[g.k]; }
+      if(s>0){ const k=o.fn[fn]/s; o.sub[fn]={}; for(const g of groups) o.sub[fn][g.k]=raw[g.k]*k; }
+    }
+  }
+  if(r.r_inc!=null&&r.r_prod!=null&&r.r_soc!=null)
+    o.revp={inc:r.r_inc,prd:r.r_prod,ssc:r.r_soc,oth:Math.max(0,r.rev-r.r_inc-r.r_prod-r.r_soc)};
+  // Revenue subcategories, scaled so they add up to each source's total
+  if(o.revp&&r.rd) for(const g in RSUB){
+    const raw={}; let s=0; for(const p of RSUB[g]){ raw[p.k]=Math.max(0,r.rd[p.k]??0); s+=raw[p.k]; }
+    if(s>0&&RSUB[g].every(p=>r.rd[p.k]!=null)){ const k=o.revp[g]/s; o.rsub[g]={}; for(const p of RSUB[g]) o.rsub[g][p.k]=raw[p.k]*k; }
+  }
+  return o;
+}
+/* For the current view: the parts of the thick bar, its full total, and the thin-bar value. */
+function viewOf(p){
+  const m=M();
+  if(m.kind==="rev") return {parts:p.revp,full:p.rev,other:p.exp};
+  if(m.kind==="spend") return {parts:p.spend,full:p.exp,other:p.rev};
+  if(m.kind==="rsub") return {parts:p.rsub[m.rg]||null,full:p.revp?p.revp[m.rg]:null,other:null};
+  const t=p.fn[m.fn]; return {parts:p.sub[m.fn]||null,full:t??null,other:null};
+}
+function yearsShown(){ if(S.mode==="single") return [S.year]; const a=Math.min(S.from,S.to),b=Math.max(S.from,S.to); const ys=[]; for(let y=a;y<=b;y++) ys.push(y); return ys; }
+
+/* Aggregate one country over the selected years. Money: sum. % of GDP: GDP-weighted mean (simple mean if GDP missing). */
+function aggregate(c,ys){
+  const m=M();
+  const parts=ys.map(y=>yearParts(IDX[c]?.[y]));
+  const have=parts.map((p,i)=>p&&(S.unit==="pct"||p.gdp[S.unit]!=null)?i:-1).filter(i=>i>=0);
+  if(!have.length) return null;
+  const views=have.map(i=>viewOf(parts[i]));
+  const useW=S.unit!=="pct"||have.every(i=>parts[i].gdp.ppp!=null);
+  let W=0; const acc={rev:0,exp:0,bal:0,full:0,other:0,parts:{}};
+  for(const g of m.groups) acc.parts[g.k]=0;
+  have.forEach((i,j)=>{
+    const p=parts[i], v=views[j];
+    const w=S.unit==="pct"?(useW?p.gdp.ppp:1):p.gdp[S.unit]/100; // money: pct/100*GDP(bn)
+    if(S.unit==="pct") W+=w;
+    acc.rev+=p.rev*w; acc.exp+=p.exp*w; acc.bal+=p.bal*w;
+    if(v.full!=null) acc.full+=v.full*w; if(v.other!=null) acc.other+=v.other*w;
+    if(v.parts) for(const g of m.groups) acc.parts[g.k]+=v.parts[g.k]*w;
+  });
+  const div=S.unit==="pct"?W:1;
+  const est=!!m.sub&&have.some(i=>parts[i].est.includes(m.key));
+  return {c,name:NAMES[c],n:have.length,of:ys.length,complete:have.length===ys.length,
+    brkComplete:views.every(v=>v.parts),fullComplete:views.every(v=>v.full!=null),est,
+    rev:acc.rev/div,exp:acc.exp/div,bal:acc.bal/div,
+    full:views.every(v=>v.full!=null)?acc.full/div:null,other:views.every(v=>v.other!=null)?acc.other/div:null,
+    parts:views.every(v=>v.parts)?Object.fromEntries(m.groups.map(g=>[g.k,acc.parts[g.k]/div])):null,
+    gdp:have.reduce((a,i)=>a+(parts[i].gdp.ppp??0),0)};
+}
+
+/* ---------- formatting ---------- */
+function fmt(v,signed){
+  if(v==null||isNaN(v)) return "–";
+  const s=signed&&v>0?"+":"";
+  if(S.unit==="pct") return s+v.toFixed(Math.abs(v)<1&&v!==0?2:1)+"%";
+  const a=Math.abs(v);
+  if(a>=1000) return s+(v/1000).toLocaleString("en-US",{maximumFractionDigits:a>=10000?1:2})+" tn";
+  return s+v.toLocaleString("en-US",{maximumFractionDigits:a>=100?0:1})+" bn";
+}
+const unitLabel=()=>({pct:"% of GDP",ppp:"US$, PPP",exc:"US$, exchange rates"})[S.unit];
+const esc=s=>String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+const color=i=>`var(--s${i+1})`;
+const gi=k=>M().groups.findIndex(g=>g.k===k);
+
+/* ---------- controls ---------- */
+const $=id=>document.getElementById(id);
+function buildControls(){
+  const yr=$("year"); yr.min=MINY; yr.max=MAXY;
+  for(const sel of [$("from"),$("to")]) sel.innerHTML=YEARS.map(y=>`<option>${y}</option>`).join("");
+  $("ctys").innerHTML=ALL.map(c=>`<label class="chip cty" data-c="${c}" title="${esc(NAMES[c])}"><input type="checkbox" value="${c}">${c}</label>`).join("");
+  $("ctys").addEventListener("change",e=>{const c=e.target.value; S.ctys=e.target.checked?[...new Set([...S.ctys,c])]:S.ctys.filter(x=>x!==c); render();});
+  document.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{S.ctys=[...GROUPS[b.dataset.g]]; render();});
+  $("mSingle").onclick=()=>{S.mode="single";render();};
+  $("mRange").onclick=()=>{S.mode="range";stopPlay();render();};
+  $("bSpend").onclick=()=>{S.brk="spend";resetSort();render();};
+  $("bRev").onclick=()=>{S.brk="rev";resetSort();render();};
+  $("detail").onchange=e=>drill(e.target.value);
+  $("back").onclick=()=>drill("main");
+  $("year").oninput=()=>{S.year=+$("year").value;render();};
+  $("from").onchange=e=>{S.from=+e.target.value;render();};
+  $("to").onchange=e=>{S.to=+e.target.value;render();};
+  $("unit").onchange=e=>{S.unit=e.target.value;render();};
+  $("sort").onchange=e=>{S.sort=e.target.value;render();};
+  $("partners").onchange=e=>{S.partners=e.target.checked;render();};
+  $("complete").onchange=e=>{S.complete=e.target.checked;render();};
+  $("showTable").onchange=e=>{S.table=e.target.checked;render();};
+  $("cats").addEventListener("change",e=>{const k=e.target.value, cur=SEL(); setSel(e.target.checked?[...new Set([...cur,k])]:cur.filter(x=>x!==k)); render();});
+  $("play").onclick=()=>playing?stopPlay():startPlay();
+  $("copy").onclick=copyCSV;
+}
+function resetSort(){ if(!["total","rev","bal","name"].includes(S.sort)) S.sort="total"; }
+function drill(v){ if(S.brk==="rev") S.rdetail=v; else S.detail=v; resetSort(); hideTip(); render(); }
+let playing=null;
+function startPlay(){ if(S.year>=MAXY) S.year=MINY; $("play").textContent="❚❚ Pause"; playing=setInterval(()=>{ if(S.year>=MAXY){stopPlay();return;} S.year++; render(); },900); render(); }
+function stopPlay(){ clearInterval(playing); playing=null; $("play").textContent="▶ Play"; }
+
+function syncControls(){
+  const m=M();
+  $("mSingle").setAttribute("aria-pressed",S.mode==="single"); $("mRange").setAttribute("aria-pressed",S.mode==="range");
+  $("singleBox").hidden=S.mode!=="single"; $("rangeBox").hidden=S.mode!=="range";
+  $("year").value=S.year; $("yearVal").textContent=S.year; $("from").value=S.from; $("to").value=S.to;
+  $("unit").value=S.unit; $("partners").checked=S.partners; $("complete").checked=S.complete; $("showTable").checked=S.table;
+  $("bSpend").setAttribute("aria-pressed",S.brk==="spend"); $("bRev").setAttribute("aria-pressed",S.brk==="rev");
+  $("detail").innerHTML=`<option value="main">Main ${S.brk==="rev"?"sources":"categories"}</option>`+(S.brk==="rev"
+    ?REV.map(g=>`<option value="${g.k}">Subcategories: ${esc(g.name)}</option>`).join("")
+    :Object.entries(FUNCS).map(([k,v])=>`<option value="${k}">Subcategories: ${esc(v)}</option>`).join(""));
+  $("detail").value=S.brk==="rev"?S.rdetail:S.detail;
+  $("back").hidden=!m.sub; $("back").textContent=S.brk==="rev"?"← All sources":"← All categories";
+  const groups=m.groups, sel=SEL();
+  $("catLbl").textContent=m.catLbl;
+  $("cats").innerHTML=groups.map((g,i)=>`<label class="chip${sel.includes(g.k)?"":" off"}"><input type="checkbox" value="${g.k}"${sel.includes(g.k)?" checked":""}><span class="sw" style="background:${color(i)}"></span>${esc(g.name)}</label>`).join("");
+  const sub=!!m.sub;
+  const opts=[["total",m.title+" (selected)"],...(sub?[]:[["rev",m.other],["bal","Balance (deficit first)"]]),["name","Country name"],...groups.filter(g=>sel.includes(g.k)).map(g=>["c:"+g.k,g.name])];
+  if(!opts.some(o=>o[0]===S.sort)) S.sort="total";
+  $("sort").innerHTML=opts.map(([v,t])=>`<option value="${v}">${esc(t)}</option>`).join(""); $("sort").value=S.sort;
+  document.querySelectorAll("#ctys .chip").forEach(ch=>{const c=ch.dataset.c; const on=S.ctys.includes(c); ch.classList.toggle("off",!on); ch.querySelector("input").checked=on;
+    ch.hidden=!S.partners&&!OECD.includes(c);});
+}
+
+/* ---------- compute rows ---------- */
+function setMain(r){
+  const m=M(), sel=SEL();
+  r.main=r.parts?m.groups.filter(g=>sel.includes(g.k)).reduce((a,g)=>a+r.parts[g.k],0):(sel.length===m.groups.length?r.full:null);
+}
+function computeRows(){
+  const ys=yearsShown(), m=M();
+  const excluded=[];
+  let list=S.ctys.filter(c=>S.partners||OECD.includes(c)).map(c=>{const a=aggregate(c,ys); if(!a) excluded.push(NAMES[c]); return a;}).filter(Boolean);
+  if(S.complete) list=list.filter(r=>{const ok=r.complete&&r.brkComplete; if(!ok) excluded.push(r.name); return ok;});
+  list.forEach(setMain);
+  const sv=r=>S.sort==="total"?(r.main??-1e9):S.sort==="rev"?(r.other??-1e9):S.sort==="bal"?-r.bal:S.sort.startsWith("c:")?(r.parts?.[S.sort.slice(2)]??-1e9):0;
+  list.sort(S.sort==="name"?(a,b)=>a.name.localeCompare(b.name):(a,b)=>sv(b)-sv(a));
+  return {list,excluded,ys};
+}
+function totalRow(list){
+  if(!list.length) return null;
+  // money: sums. % of GDP: weighted by each country's GDP over the period.
+  const m=M(), w=r=>S.unit==="pct"?(r.gdp||0):1, W=list.reduce((a,r)=>a+w(r),0)||1, d=S.unit==="pct"?W:1;
+  const f=k=>list.reduce((a,r)=>a+(r[k]??0)*w(r),0)/d;
+  const t={c:"_avg",name:S.unit==="pct"?"All shown (GDP-weighted)":"All shown (total)",avg:true,rev:f("rev"),exp:f("exp"),bal:f("bal"),n:null,complete:true,
+    full:list.every(r=>r.full!=null)?f("full"):null,other:list.every(r=>r.other!=null)?f("other"):null,est:list.some(r=>r.est)};
+  t.parts=list.every(r=>r.parts)?Object.fromEntries(m.groups.map(g=>[g.k,list.reduce((a,r)=>a+r.parts[g.k]*w(r),0)/d])):null;
+  setMain(t);
+  return t;
+}
+
+/* ---------- render ---------- */
+let LAST=null;
+function render(){
+  syncControls(); save();
+  const m=M(), {list,excluded,ys}=computeRows(); const tot=totalRow(list); LAST={list,tot,ys};
+  const period=ys.length===1?`${ys[0]}`:`${ys[0]}–${ys[ys.length-1]}`;
+  const cum=S.unit!=="pct"&&ys.length>1;
+  $("ctyCount").textContent=`${list.length} shown of ${S.ctys.filter(c=>S.partners||OECD.includes(c)).length} selected`;
+  $("ctitle").textContent=`${m.title}${m.sub?"":" vs "+m.vs}, ${period} · ${unitLabel()}${cum?" (cumulative)":ys.length>1?" (period average)":""}`;
+  const sm=$("summary");
+  if(tot){
+    const shareBase=r=>m.shareOf==="revenue"?r.rev:r.exp;
+    const tiles=m.sub
+      ?[[m.name,fmt(tot.full),tot.name],[`Share of all ${m.shareOf}`,shareBase(tot)?(tot.full/shareBase(tot)*100).toFixed(1)+"%":"–",tot.name],["Largest subcategory",largest(tot).v,largest(tot).name],["Countries",String(list.length),period+(ys.length>1?` (${ys.length} years)`:"")]]
+      :[["Spending",fmt(tot.exp),tot.name],["Revenue",fmt(tot.rev),tot.name],["Balance",fmt(tot.bal,true),`${list.filter(r=>r.bal<0).length} in deficit, ${list.filter(r=>r.bal>=0).length} in surplus`],["Countries",String(list.length),period+(ys.length>1?` (${ys.length} years)`:"")]];
+    sm.innerHTML=tiles.map(([l,v,n])=>`<div class="stat"><span class="lbl">${esc(l)}</span><span class="v">${v}</span><span class="n">${esc(n)}</span></div>`).join("");
+  } else sm.innerHTML="";
+  const sel=SEL();
+  $("legend").innerHTML=m.groups.map((g,i)=>sel.includes(g.k)?`<span class="k"><span class="sw" style="background:${color(i)}"></span>${esc(g.name)}</span>`:"").join("")+
+    (m.sub?"":`<span class="k"><span class="thin"></span>${esc(m.other)}</span>`)+
+    `<span class="k"><span class="sw" style="background:var(--nodata)"></span>No breakdown available</span>`;
+  const notes=[];
+  if(m.kind==="spend"||m.kind==="rev") notes.push(`Click a coloured segment to see that ${m.kind==="rev"?"source":"category"}'s subcategories.`);
+  if(m.fn==="10"&&m.sub) notes.push("Social exclusion n.e.c. (10.7) covers social assistance, minimum income, homelessness and help for refugees and immigrants. It is not a pure measure of migration spending.");
+  if(m.sub&&list.some(r=>r.est)) notes.push(m.estNote);
+  if(m.sub&&list.some(r=>!r.parts)) notes.push("Grey bars: no subcategory data for that country.");
+  if(sel.length<m.groups.length) notes.push(`Showing ${sel.length} of ${m.groups.length} ${m.catLbl.replace(/ \(.*\)$/,"").toLowerCase()}${m.sub?"":"; the thin bar and the balance still use the full totals"}.`);
+  if(S.sort.startsWith("c:")) notes.push(`The sorted category is drawn first, from the zero line.`);
+  if(excluded.length) notes.push(`Left out for missing or incomplete data in ${period}: ${excluded.join(", ")}.`);
+  if(!S.complete&&list.some(r=>!r.complete)) notes.push("Countries marked * are missing some years in this period.");
+  $("cnote").textContent=notes.join(" ");
+  $("chart").hidden=S.table; $("tableBox").hidden=!S.table;
+  if(S.table) renderTable(list,tot); else drawChart(list,tot);
+}
+
+function drawChart(list,tot){
+  const el=$("chart"), m=M();
+  if(!list.length){el.innerHTML=`<div class="empty">No countries match. Pick some countries, or untick “Only countries with complete data”.</div>`;return;}
+  const W=Math.max(320,el.clientWidth||900), narrow=W<600;
+  const showBal=!m.sub;
+  const labW=narrow?96:170, balW=showBal?(narrow?92:170):0, gap=narrow?8:16, plotW=Math.max(80,W-labW-balW-gap*(showBal?2:1)-(showBal?0:40));
+  // In US$ the "all shown" total would dwarf every country, so it lives only in the summary tiles.
+  const showTot=tot&&S.unit==="pct";
+  const rowH=26, top=26, rows=showTot?[tot,...list]:list;
+  const H=top+rows.length*rowH+(showTot?8:0)+6;
+  const sel=SEL();
+  // stack order: the sorted category first (so it sits on the zero line), then the rest in fixed order
+  let order=m.groups.map((g,i)=>({g,i})).filter(o=>sel.includes(o.g.k));
+  if(S.sort.startsWith("c:")){const k=S.sort.slice(2); order=[...order.filter(o=>o.g.k===k),...order.filter(o=>o.g.k!==k)];}
+  const max=Math.max(...rows.map(r=>Math.max(r.main??0,r.other??0)))*1.04||1;
+  const x=v=>labW+gap+Math.max(0,v)/max*plotW;
+  const bmax=Math.max(...rows.map(r=>Math.abs(r.bal)))||1;
+  const bx0=labW+gap+plotW+gap, bmid=bx0+balW*(narrow?.5:.42), bscale=(balW*(narrow?.5:.42)-2)/bmax;
+  const ticks=niceTicks(max,narrow?3:6);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc($("ctitle").textContent)}"><g class="axis">`;
+  for(const t of ticks){const xx=x(t); s+=`<line x1="${xx}" x2="${xx}" y1="${top-4}" y2="${H-4}" stroke="var(--grid)" stroke-width="1"/><text x="${xx}" y="${top-10}" text-anchor="middle">${axisFmt(t)}</text>`;}
+  if(showBal) s+=`<line x1="${bmid}" x2="${bmid}" y1="${top-4}" y2="${H-4}" stroke="var(--line)" stroke-width="1"/><text x="${bmid}" y="${top-10}" text-anchor="middle">Balance</text>`;
+  s+=`</g>`;
+  rows.forEach((r,i)=>{
+    const y=top+i*rowH+(i>0&&showTot?8:0), cy=y+rowH/2;
+    s+=`<g class="row${r.avg?" avg":""}" data-i="${i}"><rect class="hit" x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent" rx="4"/>`;
+    const nm=(narrow?(r.avg?"All shown":r.c):r.name)+(!r.avg&&!r.complete?"*":"")+(r.est&&!r.avg?" (est.)":"");
+    s+=`<text class="cname" x="${labW}" y="${cy+4}" text-anchor="end">${esc(trunc(nm,narrow?14:26))}</text>`;
+    const bh=11, by=y+4;
+    if(r.parts){ let acc=0; const segs=order.map(o=>({...o,v:r.parts[o.g.k]})).filter(o=>o.v>0);
+      segs.forEach((o,si)=>{const x0=x(acc), x1=x(acc+o.v); acc+=o.v; const w=Math.max(0,x1-x0-(si<segs.length-1?2:0));
+        const dv=m.kind==="spend"?o.g.fn:m.kind==="rev"?o.g.k:null, drillable=dv?` class="seg" data-d="${dv}"`:"";
+        s+=si===segs.length-1?roundEnd(x0,by,w,bh,color(o.i),drillable):`<rect${drillable} x="${x0}" y="${by}" width="${w}" height="${bh}" fill="${color(o.i)}"/>`;});
+    } else if(r.main!=null){ s+=roundEnd(x(0),by,x(r.main)-x(0),bh,"var(--nodata)",""); }
+    else if(r.full!=null){ s+=roundEnd(x(0),by,x(r.full)-x(0),bh,"var(--nodata)",""); }
+    if(r.other!=null) s+=`<rect x="${x(0)}" y="${by+bh+3}" width="${Math.max(0,x(r.other)-x(0))}" height="4" rx="2" fill="var(--ink-bar)"/>`;
+    const bw=Math.abs(r.bal)*bscale, neg=r.bal<0;
+    if(!showBal){ const tv=r.main??r.full; if(tv!=null) s+=`<text class="bval" x="${x(tv)+6}" y="${cy+1}">${fmt(tv)}</text>`; }
+    else s+=`<rect x="${neg?bmid-bw:bmid}" y="${y+7}" width="${bw}" height="${rowH-14}" rx="2" fill="${neg?"var(--neg)":"var(--pos)"}"/>`;
+    if(showBal) s+=`<text class="bval" x="${neg?bmid-bw-4:bmid+bw+4}" y="${cy+4}" text-anchor="${neg?"end":"start"}">${fmt(r.bal,true)}</text>`;
+    s+=`</g>`;
+    if(r.avg&&i===0) s+=`<line x1="0" x2="${W}" y1="${y+rowH+4}" y2="${y+rowH+4}" stroke="var(--line)"/>`;
+  });
+  s+=`</svg>`; el.innerHTML=s;
+  el.querySelectorAll(".row").forEach(g=>{
+    const r=rows[+g.dataset.i];
+    g.addEventListener("mousemove",e=>showTip(r,e.clientX,e.clientY));
+    g.addEventListener("mouseleave",hideTip);
+    g.addEventListener("click",e=>{e.stopPropagation(); const seg=e.target.closest(".seg"); if(seg){drill(seg.dataset.d);return;} showTip(r,e.clientX,e.clientY);});
+  });
+}
+function roundEnd(x,y,w,h,fill,attr){ if(w<=0) return ""; const r=Math.min(4,w); return `<path${attr||""} d="M${x},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h-r}Q${x+w},${y+h} ${x+w-r},${y+h}H${x}Z" fill="${fill}"/>`; }
+function largest(r){ if(!r.parts) return {v:"–",name:""}; const m=M(); const g=m.groups.reduce((b,g)=>r.parts[g.k]>r.parts[b.k]?g:b,m.groups[0]); return {v:fmt(r.parts[g.k]),name:g.name}; }
+function trunc(s,n){return s.length>n?s.slice(0,n-1)+"…":s;}
+function niceTicks(max,n){const raw=max/n, p=Math.pow(10,Math.floor(Math.log10(raw))), mm=raw/p, step=(mm<1.5?1:mm<3?2:mm<7?5:10)*p; const t=[]; for(let v=0;v<=max+1e-9;v+=step) t.push(+v.toFixed(6)); return t;}
+function axisFmt(v){ if(S.unit==="pct") return v+"%"; return v>=1000?(v/1000).toLocaleString("en-US",{maximumFractionDigits:1})+"tn":v.toLocaleString("en-US")+"bn"; }
+
+const tip=$("tip");
+function showTip(r,cx,cy){
+  const m=M(), sel=SEL(), ys=LAST.ys, period=ys.length===1?`${ys[0]}`:`${ys[0]}–${ys[ys.length-1]}`;
+  let h=`<h4>${esc(r.name)}</h4><div class="meta">${period} · ${unitLabel()}${r.n!=null&&r.n<r.of?` · data for ${r.n} of ${r.of} years`:""}${r.est?" · "+m.estShort:""}</div><table>`;
+  if(r.parts) m.groups.forEach((g,i)=>{ h+=`<tr style="${sel.includes(g.k)?"":"opacity:.45"}"><td><span class="sw" style="background:${color(i)}"></span>${esc(g.name)}</td><td class="num">${fmt(r.parts[g.k])}</td></tr>`; });
+  else h+=`<tr><td colspan="2" style="color:var(--muted)">No breakdown for this period</td></tr>`;
+  if(m.sub) h+=`<tr class="tot"><td>${esc(m.other)}</td><td class="num">${fmt(r.full)}</td></tr>`;
+  const base=m.shareOf==="revenue"?r.rev:r.exp;
+  if(m.sub) h+=`<tr><td>Share of all government ${m.shareOf}</td><td class="num">${r.full!=null&&base?(r.full/base*100).toFixed(1)+"%":"–"}</td></tr></table>`;
+  else h+=`<tr class="tot"><td>Total spending</td><td class="num">${fmt(r.exp)}</td></tr><tr><td>Total revenue</td><td class="num">${fmt(r.rev)}</td></tr><tr><td>${r.bal<0?"Deficit":"Surplus"}</td><td class="num">${fmt(r.bal,true)}</td></tr></table>`;
+  if(m.kind==="spend"||m.kind==="rev") h+=`<div class="meta" style="margin:6px 0 0">Click a segment to see its subcategories</div>`;
+  tip.innerHTML=h; tip.hidden=false;
+  const tw=tip.offsetWidth, th=tip.offsetHeight;
+  let lx=cx+16, ly=cy+16; if(lx+tw>innerWidth-8) lx=cx-tw-16; if(lx<8) lx=8; if(ly+th>innerHeight-8) ly=Math.max(8,cy-th-16);
+  tip.style.left=lx+"px"; tip.style.top=ly+"px";
+}
+function hideTip(){tip.hidden=true;}
+document.addEventListener("click",hideTip); addEventListener("scroll",hideTip,{passive:true});
+
+function tableData(list,tot){
+  const m=M(), sub=!!m.sub;
+  const head=["Country",...m.groups.map(g=>g.name),...(sub?[m.other,`Total ${m.shareOf}`]:["Total spending","Total revenue","Balance"]),"Years with data","Note"];
+  const rows=[tot,...list].filter(Boolean).map(r=>[r.name,...m.groups.map(g=>r.parts?r.parts[g.k]:null),...(sub?[r.full,m.shareOf==="revenue"?r.rev:r.exp]:[r.exp,r.rev,r.bal]),r.n==null?"":`${r.n}/${r.of}`,r.est&&!r.avg?"Split estimated":""]);
+  return {head,rows};
+}
+function renderTable(list,tot){
+  const {head,rows}=tableData(list,tot);
+  const cell=v=>typeof v==="number"?fmt(v):esc(v??"–");
+  $("tableBox").innerHTML=list.length?`<div class="tablewrap"><table class="data"><thead><tr>${head.map(h=>`<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(v=>`<td>${cell(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`:`<div class="empty">No countries match.</div>`;
+}
+async function copyCSV(){
+  if(!LAST) return; const {head,rows}=tableData(LAST.list,LAST.tot);
+  const q=v=>{const s=typeof v==="number"?(Math.round(v*1000)/1000).toString():String(v??""); return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s;};
+  const csv=[`# ${$("ctitle").textContent}`,head.map(q).join(","),...rows.map(r=>r.map(q).join(","))].join("\n");
+  const b=$("copy");
+  try{await navigator.clipboard.writeText(csv); b.textContent="Copied";}
+  catch(e){ S.table=true; render(); b.textContent="Copy blocked; table shown instead"; }
+  setTimeout(()=>b.textContent="Copy data as CSV",2000);
+}
+
+buildControls(); render();
+let rz; new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(()=>{if(!S.table&&LAST) drawChart(LAST.list,LAST.tot);},120);}).observe($("chart"));
+</script>
