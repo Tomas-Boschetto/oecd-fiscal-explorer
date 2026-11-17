@@ -11,7 +11,7 @@ import csv, io, os, sys, urllib.request, zipfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW, PROC = f"{ROOT}/data/raw", f"{ROOT}/data/processed"
 OECD = "https://sdmx.oecd.org/public/rest/data"
-UA = {"User-Agent": "oecd-fiscal-explorer/1.0 (+https://github.com/Tomas-Boschetto/oecd-fiscal-explorer)"}
+UA = {"User-Agent": "public-finance-explorer/1.0 (+https://github.com/Tomas-Boschetto/public-finance-explorer)"}
 
 QUICK = {
     "DF_NAAG_VI.csv": f"{OECD}/OECD.SDD.NAD,DSD_NAAG_VI@DF_NAAG_VI,/all?format=csvfilewithlabels",

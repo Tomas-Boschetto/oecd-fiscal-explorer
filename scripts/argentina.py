@@ -27,7 +27,7 @@ import csv, io, json, os, sys, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW, OUT = f"{ROOT}/data/raw/argentina", f"{ROOT}/data/processed/argentina.json"
-UA = {"User-Agent": "oecd-fiscal-explorer/1.0 (+https://github.com/Tomas-Boschetto/oecd-fiscal-explorer)"}
+UA = {"User-Agent": "public-finance-explorer/1.0 (+https://github.com/Tomas-Boschetto/public-finance-explorer)"}
 LAST_ACTUAL = 2024   # IMF figures after this year are projections and are left out
 
 # Gasto Público Consolidado, % of GDP (datos.gob.ar series ids) -> short names

@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>OECD Fiscal Balance Explorer</title>
+<title>Public Finance Explorer</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -113,6 +113,7 @@ details[open] summary{margin-bottom:8px}
 #chart .row:hover .hit,#chart .row.hl .hit{fill:var(--chip)}
 #chart .seg{cursor:pointer}
 #chart .seg:hover{opacity:.8}
+#chart .bval.gdp{fill:var(--muted)}
 #chart .bval{font-family:var(--f-mono);font-size:11px;font-variant-numeric:tabular-nums}
 .tip{position:fixed;z-index:20;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.14);padding:10px 12px;font-size:12.5px;width:290px;max-width:calc(100vw - 24px)}
 .tip h4{margin:0 0 2px;font-size:14px;font-family:var(--f-display)}
@@ -136,8 +137,8 @@ table.data td:first-child{font-family:var(--f-body)}
 <div class="wrap">
   <header>
     <div>
-      <h1>OECD Fiscal Balance Explorer</h1>
-      <p class="sub">General government spending by function, revenue by source, and the resulting deficit or surplus. Pick a year or a period, then narrow countries and categories.</p>
+      <h1>Public Finance Explorer</h1>
+      <p class="sub">What governments spend and collect, their deficits, and the debt of governments, households and companies, across OECD and G20 economies since 1995. Pick a year or a period, then narrow countries and categories.</p>
     </div>
   </header>
   <nav class="tabs" aria-label="Sections">
@@ -300,8 +301,8 @@ table.data td:first-child{font-family:var(--f-body)}
 
       <h3>Download the data and code</h3>
       <ul>
-        <li><a href="https://github.com/Tomas-Boschetto/oecd-fiscal-explorer/blob/main/data/explorer_dataset.csv">explorer_dataset.csv</a>: every value in this explorer, one value per row, with an <code>estimated</code> flag and the source of each figure.</li>
-        <li><a href="https://github.com/Tomas-Boschetto/oecd-fiscal-explorer">github.com/Tomas-Boschetto/oecd-fiscal-explorer</a>: the code, the intermediate data and instructions to rebuild or update everything. The code is under the MIT licence.</li>
+        <li><a href="https://github.com/Tomas-Boschetto/public-finance-explorer/blob/main/data/explorer_dataset.csv">explorer_dataset.csv</a>: every value in this explorer, one value per row, with an <code>estimated</code> flag and the source of each figure.</li>
+        <li><a href="https://github.com/Tomas-Boschetto/public-finance-explorer">github.com/Tomas-Boschetto/public-finance-explorer</a>: the code, the intermediate data and instructions to rebuild or update everything. The code is under the MIT licence.</li>
       </ul>
     </article>
   </div>
@@ -665,6 +666,10 @@ function aggregateDebt(c,ys){
     chg:start?selSum(end.p)-selSum(start.p):null,dg:end.p.gov,dp:end.p.hh+end.p.nfc,dtot:all(end.p),dchg:start?all(end.p)-all(start.p):null,
     rev:null,exp:null,bal:null,gdp:end.g,endY};
 }
+function gdpKey(){ return S.unit==="ppp"?"gdp_ppp":"gdp_exc"; }
+function gdpOf(c,ys){ for(let i=ys.length-1;i>=0;i--){ const r=IDX[c]?.[ys[i]]; if(r&&r[gdpKey()]!=null) return {v:r[gdpKey()],y:ys[i]}; } return null; }
+function fmtGdp(v){ if(v==null) return "–"; return v>=1000?"$"+(v/1000).toLocaleString("en-US",{maximumFractionDigits:v>=10000?1:2})+" tn":"$"+v.toLocaleString("en-US",{maximumFractionDigits:0})+" bn"; }
+const gdpLabel=()=>S.unit==="ppp"?"GDP, US$ at PPP":"GDP, US$ at market exchange rates";
 function computeRows(){
   const ys=yearsShown(), m=M();
   const excluded=[];
@@ -673,6 +678,7 @@ function computeRows(){
   // In the main views a country without a breakdown still shows (as a grey bar); subcategory views need the breakdown.
   if(S.complete) list=list.filter(r=>{const ok=r.complete&&(m.sub?r.brkComplete:true); if(!ok) excluded.push(r.name); return ok;});
   list.forEach(setMain);
+  for(const r of list){ const g=gdpOf(r.c,ys); r.gdpv=g?g.v:null; r.gdpy=g?g.y:null; }
   const sv=r=>S.sort==="chg"?(r.chg??-1e9):S.sort==="total"?(r.main??-1e9):S.sort==="rev"?(r.other??-1e9):S.sort==="bal"?-r.bal:S.sort.startsWith("c:")?(r.parts?.[S.sort.slice(2)]??-1e9):0;
   list.sort(S.sort==="name"?(a,b)=>a.name.localeCompare(b.name):(a,b)=>sv(b)-sv(a));
   return {list,excluded,ys};
@@ -685,7 +691,7 @@ function totalRow(list){
   const agg=(rows,get)=>{ if(!rows.length) return null; const W=rows.reduce((a,r)=>a+w(r),0)||1; return rows.reduce((a,r)=>a+get(r)*w(r),0)/(S.unit==="pct"?W:1); };
   const has=k=>list.filter(r=>r[k]!=null);
   const withFull=has("full"), withParts=list.filter(r=>r.parts);
-  const t={c:"_avg",name:S.unit==="pct"?"All shown (GDP-weighted)":"All shown (total)",avg:true,n:null,complete:true,
+  const t={c:"_avg",name:S.unit==="pct"?"All shown (GDP-weighted)":"All shown (total)",avg:true,n:null,complete:true,gdpv:list.some(r=>r.gdpv!=null)?list.reduce((a,r)=>a+(r.gdpv||0),0):null,
     rev:agg(list,r=>r.rev),exp:agg(list,r=>r.exp),bal:agg(list,r=>r.bal),
     full:agg(withFull,r=>r.full),other:agg(has("other"),r=>r.other),est:list.some(r=>r.est),
     nFull:withFull.length,nParts:withParts.length,
@@ -727,6 +733,7 @@ function render(){
   if(list.some(r=>r.est||r.alt)) notes.push("Rows marked “est.” are estimates; see About the data.");
   if(m.sub&&list.some(r=>!r.parts)) notes.push("Grey bars: no subcategory data for that country.");
   if(sel.length<m.groups.length) notes.push(`Showing ${sel.length} of ${m.groups.length} ${m.catLbl.replace(/ \(.*\)$/,"").toLowerCase()}${m.sub||m.debt?"":"; the thin bar and the balance still use the full totals"}.`);
+  if(list.some(r=>r.gdpv!=null)) notes.push(`GDP column: ${gdpLabel()}, ${ys.length>1?"latest year of the period":"same year"}.`);
   if(S.sort.startsWith("c:")) notes.push(`The sorted category is drawn first, from the zero line.`);
   if(excluded.length) notes.push(`Left out for missing or incomplete data in ${period}: ${excluded.join(", ")}.`);
   if(!S.complete&&list.some(r=>!r.complete)) notes.push("Countries marked * are missing some years in this period.");
@@ -740,7 +747,8 @@ function drawChart(list,tot){
   if(!list.length){el.innerHTML=`<div class="empty">No countries match. Pick some countries, or untick “Only countries with complete data”.</div>`;return;}
   const W=Math.max(320,el.clientWidth||900), narrow=W<600;
   const showBal=m.debt?ys2()>1:!m.sub, rv=r=>m.debt?r.chg:r.bal;
-  const labW=narrow?96:170, balW=showBal?(narrow?92:170):0, gap=narrow?8:16, plotW=Math.max(80,W-labW-balW-gap*(showBal?2:1)-(showBal?0:40));
+  const gdpW=narrow?0:78;
+  const labW=narrow?96:170, balW=showBal?(narrow?92:170):0, gap=narrow?8:16, plotW=Math.max(80,W-labW-gdpW-balW-gap*(showBal?2:1)-(showBal?0:40));
   // In US$ the "all shown" total would dwarf every country, so it lives only in the summary tiles.
   const showTot=tot&&S.unit==="pct";
   const rowH=26, top=26, rows=showTot?[tot,...list]:list;
@@ -750,19 +758,21 @@ function drawChart(list,tot){
   let order=m.groups.map((g,i)=>({g,i})).filter(o=>sel.includes(o.g.k));
   if(S.sort.startsWith("c:")){const k=S.sort.slice(2); order=[...order.filter(o=>o.g.k===k),...order.filter(o=>o.g.k!==k)];}
   const max=Math.max(...rows.map(r=>Math.max(r.main??0,r.other??0)))*1.04||1;
-  const x=v=>labW+gap+Math.max(0,v)/max*plotW;
+  const x=v=>labW+gdpW+gap+Math.max(0,v)/max*plotW;
   const bmax=Math.max(...rows.map(r=>Math.abs(rv(r)??0)))||1;
-  const bx0=labW+gap+plotW+gap, bmid=bx0+balW*(narrow?.5:.42), bscale=(balW*(narrow?.5:.42)-2)/bmax;
+  const bx0=labW+gdpW+gap+plotW+gap, bmid=bx0+balW*(narrow?.5:.42), bscale=(balW*(narrow?.5:.42)-2)/bmax;
   const ticks=niceTicks(max,narrow?3:6);
   let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc($("ctitle").textContent)}"><g class="axis">`;
   for(const t of ticks){const xx=x(t); s+=`<line x1="${xx}" x2="${xx}" y1="${top-4}" y2="${H-4}" stroke="var(--grid)" stroke-width="1"/><text x="${xx}" y="${top-10}" text-anchor="middle">${axisFmt(t)}</text>`;}
   if(showBal) s+=`<line x1="${bmid}" x2="${bmid}" y1="${top-4}" y2="${H-4}" stroke="var(--line)" stroke-width="1"/><text x="${bmid}" y="${top-10}" text-anchor="middle">${m.debt?"Change":"Balance"}</text>`;
+  if(gdpW) s+=`<text x="${labW+gdpW}" y="${top-10}" text-anchor="end">GDP</text>`;
   s+=`</g>`;
   rows.forEach((r,i)=>{
     const y=top+i*rowH+(i>0&&showTot?8:0), cy=y+rowH/2;
     s+=`<g class="row${r.avg?" avg":""}" data-i="${i}"><rect class="hit" x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent" rx="4"/>`;
     const nm=(narrow?(r.avg?"All shown":r.c):r.name)+(!r.avg&&!r.complete?"*":"")+((r.est||r.alt)&&!r.avg?" (est.)":"");
     s+=`<text class="cname" x="${labW}" y="${cy+4}" text-anchor="end">${esc(trunc(nm,narrow?14:26))}</text>`;
+    if(gdpW&&r.gdpv!=null) s+=`<text class="bval gdp" x="${labW+gdpW}" y="${cy+4}" text-anchor="end">${fmtGdp(r.gdpv)}</text>`;
     const bh=11, by=y+4;
     if(r.parts){ let acc=0; const segs=order.map(o=>({...o,v:r.parts[o.g.k]})).filter(o=>o.v>0);
       segs.forEach((o,si)=>{const x0=x(acc), x1=x(acc+o.v); acc+=o.v; const w=Math.max(0,x1-x0-(si<segs.length-1?2:0));
@@ -797,7 +807,7 @@ function axisFmt(v){ if(S.unit==="pct") return v+"%"; return v>=1000?(v/1000).to
 const tip=$("tip");
 function showTip(r,cx,cy){
   const m=M(), sel=SEL(), ys=LAST.ys, period=ys.length===1?`${ys[0]}`:`${ys[0]}–${ys[ys.length-1]}`;
-  let h=`<h4>${esc(r.name)}</h4><div class="meta">${period} · ${unitLabel()}${r.n!=null&&r.n<r.of?` · data for ${r.n} of ${r.of} years`:""}${r.alt||r.est?" · estimate, see About the data":""}</div><table>`;
+  let h=`<h4>${esc(r.name)}</h4><div class="meta">${period} · ${unitLabel()}${r.n!=null&&r.n<r.of?` · data for ${r.n} of ${r.of} years`:""}${r.alt||r.est?" · estimate, see About the data":""}${r.gdpv!=null?`<br>${gdpLabel()}${r.gdpy&&ys.length>1?" ("+r.gdpy+")":""}: ${fmtGdp(r.gdpv)}`:""}</div><table>`;
   if(r.parts) m.groups.forEach((g,i)=>{ h+=`<tr style="${sel.includes(g.k)?"":"opacity:.45"}"><td><span class="sw" style="background:${color(i)}"></span>${esc(g.name)}</td><td class="num">${fmt(r.parts[g.k])}</td></tr>`; });
   else h+=`<tr><td colspan="2" style="color:var(--muted)">No breakdown for this period</td></tr>`;
   if(m.debt){ h+=`<tr class="tot"><td>Total shown</td><td class="num">${fmt(r.full)}</td></tr>`+(r.chg!=null?`<tr><td>Change since ${ys[0]}</td><td class="num">${fmtChg(r.chg)}</td></tr>`:"")+(r.endY&&r.endY!==ys[ys.length-1]?`<tr><td colspan="2" style="color:var(--muted)">Latest data: ${r.endY}</td></tr>`:"")+`</table>`; }
@@ -815,13 +825,15 @@ function showTip(r,cx,cy){
 function hideTip(){tip.hidden=true;}
 document.addEventListener("click",hideTip); addEventListener("scroll",hideTip,{passive:true});
 
+// GDP in the table: a text cell so it isn't formatted with the chart unit (US$ billions, rounded)
+const gdpCell=r=>r.gdpv==null?"":String(Math.round(r.gdpv));
 function tableData(list,tot){
   const m=M(), sub=!!m.sub;
   if(m.debt){ const rng=LAST&&LAST.ys.length>1;
-    return {head:["Country",...m.groups.map(g=>g.name),"Total shown",...(rng?["Change over the period"]:[]),"Note"],
-      rows:[tot,...list].filter(Boolean).map(r=>[r.name,...m.groups.map(g=>r.parts?r.parts[g.k]:null),r.full,...(rng?[r.chg]:[]),r.est&&!r.avg?"Government debt from IMF WEO":""])}; }
-  const head=["Country",...m.groups.map(g=>g.name),...(sub?[m.other,`Total ${m.shareOf}`]:["Total spending","Total revenue","Balance"]),"Years with data","Note"];
-  const rows=[tot,...list].filter(Boolean).map(r=>[r.name,...m.groups.map(g=>r.parts?r.parts[g.k]:null),...(sub?[r.full,m.shareOf==="revenue"?r.rev:r.exp]:[r.exp,r.rev,r.bal]),r.n==null?"":`${r.n}/${r.of}`,r.est&&!r.avg?"Split estimated":""]);
+    return {head:["Country",gdpLabel()+" (bn)",...m.groups.map(g=>g.name),"Total shown",...(rng?["Change over the period"]:[]),"Note"],
+      rows:[tot,...list].filter(Boolean).map(r=>[r.name,gdpCell(r),...m.groups.map(g=>r.parts?r.parts[g.k]:null),r.full,...(rng?[r.chg]:[]),r.est&&!r.avg?"Government debt from IMF WEO":""])}; }
+  const head=["Country",gdpLabel()+" (bn)",...m.groups.map(g=>g.name),...(sub?[m.other,`Total ${m.shareOf}`]:["Total spending","Total revenue","Balance"]),"Years with data","Note"];
+  const rows=[tot,...list].filter(Boolean).map(r=>[r.name,gdpCell(r),...m.groups.map(g=>r.parts?r.parts[g.k]:null),...(sub?[r.full,m.shareOf==="revenue"?r.rev:r.exp]:[r.exp,r.rev,r.bal]),r.n==null?"":`${r.n}/${r.of}`,r.est&&!r.avg?"Split estimated":""]);
   return {head,rows};
 }
 function renderTable(list,tot){

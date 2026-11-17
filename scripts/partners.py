@@ -26,7 +26,7 @@ import csv, json, os, sys, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW, OUT = f"{ROOT}/data/raw/partners", f"{ROOT}/data/processed/partners.json"
-UA = {"User-Agent": "oecd-fiscal-explorer/1.0 (+https://github.com/Tomas-Boschetto/oecd-fiscal-explorer)"}
+UA = {"User-Agent": "public-finance-explorer/1.0 (+https://github.com/Tomas-Boschetto/public-finance-explorer)"}
 COUNTRIES = {"CHN": "China", "IND": "India", "BRA": "Brazil", "IDN": "Indonesia", "SAU": "Saudi Arabia", "ZAF": "South Africa"}
 FIRST, LAST_ACTUAL = 1995, 2024
 IMF_SERIES = ("GGR_G01_GDP_PT", "G_X_G01_GDP_PT", "GGXCNL_G01_GDP_PT", "G_XWDG_G01_GDP_PT", "NGDPD", "PPPGDP")

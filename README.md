@@ -1,9 +1,10 @@
-# OECD Fiscal Balance Explorer
+# Public Finance Explorer
 
-**Open the dashboard: https://tomas-boschetto.github.io/oecd-fiscal-explorer/** · Download the data: [`data/explorer_dataset.csv`](data/explorer_dataset.csv)
+**Open the dashboard: https://tomas-boschetto.github.io/public-finance-explorer/** · Download the data: [`data/explorer_dataset.csv`](data/explorer_dataset.csv)
 
-An interactive dashboard and an open dataset comparing **general government spending, revenue and deficits** across
-OECD countries, 1995–2024, with a drill-down from main categories to subcategories:
+An interactive dashboard and an open dataset comparing **general government spending, revenue, deficits and debt**
+across OECD countries and the non-OECD G20 economies, 1995–2024, with a drill-down from main categories to
+subcategories:
 
 - **Spending** by function (COFOG): social protection, health, education, general public services, economic affairs,
   defence, public order, and housing/environment/culture. Each splits into its official subcategories, for example
@@ -23,9 +24,9 @@ needs no server, account or installation.
 
 ## Use the dashboard
 
-Open it online at https://tomas-boschetto.github.io/oecd-fiscal-explorer/, or use it offline:
+Open it online at https://tomas-boschetto.github.io/public-finance-explorer/, or use it offline:
 
-1. Download the repository: **Code → Download ZIP** on GitHub, or `git clone https://github.com/Tomas-Boschetto/oecd-fiscal-explorer.git`.
+1. Download the repository: **Code → Download ZIP** on GitHub, or `git clone https://github.com/Tomas-Boschetto/public-finance-explorer.git`.
 2. Open `index.html` in a browser.
 
 What you can do:
@@ -223,5 +224,5 @@ src/template.html              dashboard source
 | OECD Revenue Statistics in Latin America and the Caribbean | Argentina taxes | OECD terms (CC BY 4.0) |
 
 When you reuse the data, credit the original sources (e.g. "Source: OECD; US detail: BEA, CMS; compiled by
-OECD Fiscal Balance Explorer"). The code in this repository is released under the MIT licence (see `LICENSE`).
+Public Finance Explorer"). The code in this repository is released under the MIT licence (see `LICENSE`).
 This is an independent project and is not affiliated with or endorsed by the OECD, BEA, CMS, the IMF, SIPRI or the Argentine government.

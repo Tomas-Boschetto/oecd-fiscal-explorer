@@ -17,7 +17,7 @@ import json, os, sys, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW, OUT = f"{ROOT}/data/raw/debt", f"{ROOT}/data/processed/debt.json"
-UA = {"User-Agent": "oecd-fiscal-explorer/1.0 (+https://github.com/Tomas-Boschetto/oecd-fiscal-explorer)"}
+UA = {"User-Agent": "public-finance-explorer/1.0 (+https://github.com/Tomas-Boschetto/public-finance-explorer)"}
 SERIES = {"gov": "GG_DEBT_GDP", "hh": "HH_LS", "nfc": "NFC_LS", "gov_weo": "GGXWDG_NGDP"}
 LAST_ACTUAL = 2024   # WEO values after this are projections
 
