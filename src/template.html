@@ -174,7 +174,7 @@ table.data td:first-child{font-family:var(--f-body)}
     <details id="ctyDetails">
       <summary>Countries: <span id="ctyCount"></span></summary>
       <div class="groupbtns">
-        <button class="btn" data-g="oecd">All OECD</button><button class="btn" data-g="eu">EU members</button><button class="btn" data-g="g7">G7</button><button class="btn" data-g="nordic">Nordics</button><button class="btn" data-g="anglo">English-speaking</button><button class="btn" data-g="latam">Latin America</button><button class="btn" data-g="none">Clear</button>
+        <button class="btn" data-g="oecd">All OECD</button><button class="btn" data-g="eu">EU members</button><button class="btn" data-g="g7">G7</button><button class="btn" data-g="nordic">Nordics</button><button class="btn" data-g="anglo">English-speaking</button><button class="btn" data-g="latam">Latin America</button><button class="btn" data-g="g20">G20</button><button class="btn" data-g="emerging">Emerging G20</button><button class="btn" data-g="none">Clear</button>
       </div>
       <div class="chips" id="ctys"></div>
       <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px 18px">
@@ -225,7 +225,7 @@ table.data td:first-child{font-family:var(--f-body)}
   <div id="tab-about" class="tabpage" hidden>
     <article class="panel doc">
       <h2>About the data</h2>
-      <p>This explorer compares what governments spend, what they collect and the resulting deficit or surplus across OECD countries and Argentina, from 1995 to 2024. All figures cover <b>general government</b>: central, state and local government plus social security funds, consolidated, on the national-accounts basis (SNA 2008). That is what makes countries comparable, whatever their federal structure.</p>
+      <p>This explorer compares what governments spend, what they collect and the resulting deficit or surplus across OECD countries and the large non-OECD G20 economies (Argentina, Brazil, China, India, Indonesia, Saudi Arabia, South Africa), from 1995 to 2024. All figures cover <b>general government</b>: central, state and local government plus social security funds, consolidated, on the national-accounts basis (SNA 2008). That is what makes countries comparable, whatever their federal structure.</p>
 
       <h3>How to use it</h3>
       <table class="doctable">
@@ -237,7 +237,7 @@ table.data td:first-child{font-family:var(--f-body)}
           <tr><th>Sort by</th><td>Total, the comparison total, balance, name, or any single category. The category you sort by is drawn first, from the zero line, so it lines up across countries.</td></tr>
           <tr><th>Categories</th><td>Turn categories on and off. The total and the thin bar keep using the full figures.</td></tr>
           <tr><th>Countries</th><td>Pick countries one by one or by group. Other non-OECD economies and EU / euro-area totals can be added.</td></tr>
-          <tr><th>Complete data only</th><td>Hides countries missing any year of the chosen period, or missing the selected breakdown. Those left out are listed under the chart.</td></tr>
+          <tr><th>Complete data only</th><td>Hides countries missing any year of the chosen period, and in subcategory views countries without that breakdown. In the main views, countries without a breakdown show a grey bar. Those left out are listed under the chart.</td></tr>
           <tr><th>Table / Copy as CSV</th><td>See or copy the exact numbers behind the current view.</td></tr>
         </tbody>
       </table>
@@ -262,6 +262,14 @@ table.data td:first-child{font-family:var(--f-body)}
         <li><b>Personal vs corporate income tax.</b> Where the national accounts don't split them (about half the countries, including the US; some report zeros instead of empty cells), the split comes from OECD Revenue Statistics (codes 1100, 1200, 1300) and is applied to the national-accounts total.</li>
         <li><b>General consumption taxes.</b> National accounts count only VAT as VAT and put retail sales taxes (for example US state sales taxes) with excise duties. For comparability, sales and other general turnover taxes (Revenue Statistics 5112 and 5113) are moved next to VAT. Revenue Statistics lags by a year or two, so its latest ratio is carried forward for up to two years.</li>
         <li><b>Government debt for Mexico, New Zealand and Argentina</b> is missing from the Global Debt Database and comes from the IMF World Economic Outlook instead (general government gross debt).</li>
+        <li><b>China, India, Brazil, Indonesia, Saudi Arabia and South Africa</b> are not (or only partly) in the OECD national accounts, so all their figures are estimates:
+          <ul>
+            <li>Totals (revenue, spending, balance, debt) and GDP in US$: IMF Fiscal Monitor and World Economic Outlook, general government, to 2024.</li>
+            <li>Spending by category: IMF Government Finance Statistics (COFOG), general government, scaled to the IMF spending total. Available for Brazil (from 2010), South Africa (from 2000), China (from 2005) and Indonesia (2008–2023, main categories only). China reports subcategories only for some categories. India and Saudi Arabia publish no breakdown by function for general government, so they show totals only.</li>
+            <li>Taxes: OECD Global Revenue Statistics for Brazil, China, Indonesia and South Africa, mapped the same way as for Argentina. India and Saudi Arabia have no tax breakdown; Saudi revenue comes mostly from oil.</li>
+            <li>Brazil's figures differ from earlier versions of this explorer, which used partial OECD data up to 2021.</li>
+          </ul>
+        </li>
         <li><b>Argentina</b> is not in the OECD national accounts, so all its figures are estimates built from other sources:
           <ul>
             <li>Totals (revenue, spending, balance, debt) and GDP in US$: IMF Fiscal Monitor and World Economic Outlook, general government, to 2024. Later IMF years are projections and are left out.</li>
@@ -278,11 +286,12 @@ table.data td:first-child{font-family:var(--f-body)}
         <thead><tr><th>Source</th><th>Used for</th><th>Terms</th></tr></thead>
         <tbody>
           <tr><td>OECD National Accounts: <i>National Accounts at a Glance</i> ch. 6; Tables 1, 11 and 12 (<a href="https://data-explorer.oecd.org/">OECD Data Explorer</a>)</td><td>Totals, categories, subcategories, revenue detail, GDP</td><td><a href="https://www.oecd.org/en/about/terms-conditions.html">CC BY 4.0</a></td></tr>
-          <tr><td>OECD Revenue Statistics (OECD countries; Latin America and the Caribbean)</td><td>Income-tax split, sales taxes; Argentina's taxes</td><td>CC BY 4.0</td></tr>
+          <tr><td>OECD Revenue Statistics (OECD countries; Latin America and the Caribbean)</td><td>Income-tax split, sales taxes; taxes of Argentina, Brazil, China, Indonesia, South Africa</td><td>CC BY 4.0</td></tr>
           <tr><td>US Bureau of Economic Analysis, NIPA table 3.16</td><td>US spending subcategories (except health)</td><td>Public domain</td></tr>
           <tr><td>US Centers for Medicare &amp; Medicaid Services, <a href="https://www.cms.gov/data-research/statistics-trends-and-reports/national-health-expenditure-data/historical">National Health Expenditure Accounts</a></td><td>US health subcategories</td><td>Public domain</td></tr>
-          <tr><td><a href="https://www.imf.org/external/datamapper/">IMF Fiscal Monitor and World Economic Outlook</a></td><td>Argentina totals and GDP</td><td><a href="https://www.imf.org/en/About/copyright-and-terms">IMF terms</a> (reuse with attribution)</td></tr>
+          <tr><td><a href="https://www.imf.org/external/datamapper/">IMF Fiscal Monitor and World Economic Outlook</a></td><td>Totals and GDP for Argentina, Brazil, China, India, Indonesia, Saudi Arabia, South Africa</td><td><a href="https://www.imf.org/en/About/copyright-and-terms">IMF terms</a> (reuse with attribution)</td></tr>
           <tr><td>Argentina, Ministerio de Economía: <a href="https://datos.gob.ar/dataset/sspm-gasto-publico-consolidado">Gasto Público Consolidado</a></td><td>Argentina spending by category</td><td><a href="https://datos.gob.ar/acerca/seccion/terminos-y-condiciones">datos.gob.ar terms</a></td></tr>
+          <tr><td><a href="https://data.imf.org/">IMF Government Finance Statistics</a> (COFOG)</td><td>Spending by category for Brazil, China, Indonesia, South Africa</td><td><a href="https://www.imf.org/en/About/copyright-and-terms">IMF terms</a> (reuse with attribution)</td></tr>
           <tr><td><a href="https://www.imf.org/external/datamapper/datasets/GDD">IMF Global Debt Database</a></td><td>Government, household and corporate debt</td><td><a href="https://www.imf.org/en/About/copyright-and-terms">IMF terms</a> (reuse with attribution)</td></tr>
           <tr><td>SIPRI Military Expenditure Database, via the <a href="https://data.worldbank.org/indicator/MS.MIL.XPND.GD.ZS">World Bank</a></td><td>Argentina defence</td><td><a href="https://datacatalog.worldbank.org/public-licenses">World Bank data licence</a>; credit SIPRI</td></tr>
         </tbody>
@@ -342,9 +351,10 @@ for(const fn of Object.keys(FUNCS)){
   SUB[fn]=groups;
 }
 const OECD=["AUS","AUT","BEL","CAN","CHE","CHL","COL","CRI","CZE","DEU","DNK","ESP","EST","FIN","FRA","GBR","GRC","HUN","IRL","ISL","ISR","ITA","JPN","KOR","LTU","LUX","LVA","MEX","NLD","NOR","NZL","POL","PRT","SVK","SVN","SWE","TUR","USA"];
-const BASE=[...OECD,"ARG"];   // shown without the "non-OECD" toggle
+const G20X=["ARG","BRA","CHN","IDN","IND","SAU","ZAF"];   // non-OECD G20 members, from IMF / national / OECD LAC sources
+const BASE=[...OECD,...G20X];   // shown without the "non-OECD" toggle
 const GROUPS={oecd:OECD,eu:["AUT","BEL","CZE","DEU","DNK","ESP","EST","FIN","FRA","GRC","HUN","IRL","ITA","LTU","LUX","LVA","NLD","POL","PRT","SVK","SVN","SWE"],
-  g7:["CAN","FRA","DEU","ITA","JPN","GBR","USA"],nordic:["DNK","FIN","ISL","NOR","SWE"],anglo:["AUS","CAN","GBR","IRL","NZL","USA"],latam:["ARG","CHL","COL","CRI","MEX"],none:[]};
+  g7:["CAN","FRA","DEU","ITA","JPN","GBR","USA"],nordic:["DNK","FIN","ISL","NOR","SWE"],anglo:["AUS","CAN","GBR","IRL","NZL","USA"],latam:["ARG","BRA","CHL","COL","CRI","MEX"],g20:["ARG","AUS","BRA","CAN","CHN","DEU","FRA","GBR","IDN","IND","ITA","JPN","KOR","MEX","SAU","TUR","USA","ZAF"],emerging:["ARG","BRA","CHN","IDN","IND","MEX","SAU","TUR","ZAF"],none:[]};
 const NAMES=DATA.names; NAMES.CHN="China"; NAMES.EA="Euro area"; NAMES.EU="European Union";
 const IDX={}; for(const r of DATA.rows){(IDX[r.c]??={})[r.y]=r;}
 const ALL=Object.keys(IDX).sort((a,b)=>NAMES[a].localeCompare(NAMES[b]));
@@ -356,7 +366,7 @@ const S={mode:"single",year:2023,from:2015,to:2023,unit:"pct",brk:"spend",detail
   spend:SPEND.map(g=>g.k),rev:REV.map(g=>g.k),dsel:{},ctys:[...BASE],partners:false,complete:true,table:false};
 try{const s=JSON.parse(localStorage.getItem("fbx-state")||"null"); if(s&&typeof s==="object") Object.assign(S,s);}catch(e){}
 if(S.brk==="socp"){S.brk="spend";S.detail="10";}
-if(!(S.v>=2)){ if(Array.isArray(S.ctys)&&!S.ctys.includes("ARG")) S.ctys.push("ARG"); S.v=2; }   // state saved before Argentina was added
+if(!(S.v>=3)){ if(Array.isArray(S.ctys)) for(const c of G20X) if(!S.ctys.includes(c)) S.ctys.push(c); S.v=3; }   // state saved before these economies were added
 if(!S.dsel||typeof S.dsel!=="object") S.dsel={};
 if(S.detail!=="main"&&!FUNCS[S.detail]) S.detail="main";
 if(!S.rdetail||(S.rdetail!=="main"&&!RSUB[S.rdetail])) S.rdetail="main";
@@ -660,7 +670,8 @@ function computeRows(){
   const excluded=[];
   const aggFn=m.debt?aggregateDebt:aggregate;
   let list=S.ctys.filter(c=>S.partners||BASE.includes(c)).map(c=>{const a=aggFn(c,ys); if(!a) excluded.push(NAMES[c]); return a;}).filter(Boolean);
-  if(S.complete) list=list.filter(r=>{const ok=r.complete&&r.brkComplete; if(!ok) excluded.push(r.name); return ok;});
+  // In the main views a country without a breakdown still shows (as a grey bar); subcategory views need the breakdown.
+  if(S.complete) list=list.filter(r=>{const ok=r.complete&&(m.sub?r.brkComplete:true); if(!ok) excluded.push(r.name); return ok;});
   list.forEach(setMain);
   const sv=r=>S.sort==="chg"?(r.chg??-1e9):S.sort==="total"?(r.main??-1e9):S.sort==="rev"?(r.other??-1e9):S.sort==="bal"?-r.bal:S.sort.startsWith("c:")?(r.parts?.[S.sort.slice(2)]??-1e9):0;
   list.sort(S.sort==="name"?(a,b)=>a.name.localeCompare(b.name):(a,b)=>sv(b)-sv(a));

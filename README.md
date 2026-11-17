@@ -14,8 +14,9 @@ OECD countries, 1995–2024, with a drill-down from main categories to subcatego
 - **Debt** by sector: government, households and non-financial companies, from the IMF Global Debt Database.
 
 Everything is general government (central, state and local government plus social security funds), on the national
-accounts basis (SNA 2008), so countries are comparable. **Argentina** is also included, built from other public
-sources because it isn't in the OECD national accounts (see *Method*); treat its figures as approximate.
+accounts basis (SNA 2008), so countries are comparable. **Argentina, Brazil, China, India, Indonesia, Saudi Arabia and South
+Africa** (the non-OECD G20 members) are also included, built from IMF and other public sources because they aren't
+(fully) in the OECD national accounts (see *Method*); treat their figures as approximate.
 
 The whole dashboard is one file, `index.html`, with the data built in. It runs offline in any modern browser and
 needs no server, account or installation.
@@ -58,7 +59,7 @@ Columns of `explorer_dataset.csv`:
 
 | Column | Meaning |
 |---|---|
-| `country_code`, `country` | ISO 3-letter code and OECD name. Also includes Argentina (ARG, all values `estimated = 1`), some other non-OECD economies (BRA, CHN, IDN, RUS, ZAF) and aggregates (EU, EA). |
+| `country_code`, `country` | ISO 3-letter code and name. Also includes the non-OECD G20 members (ARG, BRA, CHN, IDN, IND, SAU, ZAF; all values `estimated = 1`), Russia (partial OECD data, to 2019) and aggregates (EU, EA). |
 | `year` | Calendar year. |
 | `group` | `total`, `gdp`, `spending`, `revenue` or `debt`. |
 | `code` | Spending: COFOG code, `07` (level 1) or `0703` (level 2). Revenue: `inc`, `prod`, `soc` (level 1) or e.g. `income.pit` (level 2). Totals: `revenue`, `spending`, `balance`, `gross_debt` (OECD national-accounts measure). Debt: `government`, `households`, `companies` (IMF). |
@@ -105,6 +106,13 @@ category (see below). The CSV keeps the published values, so subcategories may d
     sales taxes) with excise duties. For comparability, sales and other general turnover taxes (Revenue Statistics
     5112 + 5113) are moved next to VAT. Revenue Statistics lags by a year or two, so its latest ratio is carried
     forward for up to two years.
+- **China, India, Brazil, Indonesia, Saudi Arabia, South Africa** (`estimated = 1`):
+  - Totals and GDP in US$: IMF Fiscal Monitor / World Economic Outlook, general government, to 2024.
+  - Spending by category: [IMF Government Finance Statistics](https://data.imf.org/) (COFOG, general government),
+    scaled to the IMF spending total: Brazil from 2010, South Africa from 2000, China from 2005 (subcategories for
+    some categories only), Indonesia 2008–2023 (main categories only). India and Saudi Arabia: totals only.
+    Subcategories are kept only where they add up to at least 90% of their category.
+  - Taxes: OECD Global Revenue Statistics (Brazil, China, Indonesia, South Africa), mapped like Argentina's.
 - **Argentina** is not an OECD member and is missing from the OECD national accounts, so all its values are marked
   `estimated = 1` and come from:
   - Totals (revenue, spending, balance, gross debt) and GDP in US$: [IMF Fiscal Monitor / World Economic Outlook](https://www.imf.org/external/datamapper/),
@@ -140,6 +148,13 @@ Requirements: Python 3.8 or later. No packages to install. Run all commands from
 
 ```bash
 python3 scripts/download_sources.py
+python3 scripts/build_data.py
+```
+
+**Non-OECD G20 economies** (small downloads from the IMF and the OECD):
+
+```bash
+python3 scripts/partners.py
 python3 scripts/build_data.py
 ```
 
@@ -187,6 +202,7 @@ scripts/extract_*.py           extract subcategories from OECD tables 11 and 12
 scripts/us_subcategories.py    US subcategory shares from BEA and CMS
 scripts/argentina.py           Argentina from IMF, Ministry of Economy, SIPRI and OECD LAC
 scripts/debt.py                debt by sector from the IMF Global Debt Database
+scripts/partners.py            China, India, Brazil, Indonesia, Saudi Arabia, South Africa from IMF and OECD
 scripts/build_data.py          builds the dataset and the dashboard
 src/template.html              dashboard source
 ```
@@ -200,7 +216,8 @@ src/template.html              dashboard source
 | US Bureau of Economic Analysis, NIPA table 3.16 | US spending subcategories (except health) | US government work, public domain |
 | US Centers for Medicare & Medicaid Services, National Health Expenditure Accounts | US health subcategories | US government work, public domain |
 | IMF Global Debt Database; IMF World Economic Outlook | Debt by sector (WEO for government debt of MEX, NZL, ARG) | [IMF terms](https://www.imf.org/en/About/copyright-and-terms) (reuse with attribution) |
-| IMF Fiscal Monitor and World Economic Outlook | Argentina totals and GDP | [IMF terms](https://www.imf.org/en/About/copyright-and-terms) (reuse with attribution) |
+| IMF Government Finance Statistics (COFOG) | Spending by category for Brazil, China, Indonesia, South Africa | [IMF terms](https://www.imf.org/en/About/copyright-and-terms) (reuse with attribution) |
+| IMF Fiscal Monitor and World Economic Outlook | Totals and GDP for the non-OECD G20 economies | [IMF terms](https://www.imf.org/en/About/copyright-and-terms) (reuse with attribution) |
 | Argentina, Ministerio de Economía: Gasto Público Consolidado (datos.gob.ar) | Argentina spending by function | [datos.gob.ar terms](https://datos.gob.ar/acerca/seccion/terminos-y-condiciones) |
 | SIPRI Military Expenditure Database, via the World Bank | Argentina defence | [World Bank data licence](https://datacatalog.worldbank.org/public-licenses); credit SIPRI |
 | OECD Revenue Statistics in Latin America and the Caribbean | Argentina taxes | OECD terms (CC BY 4.0) |

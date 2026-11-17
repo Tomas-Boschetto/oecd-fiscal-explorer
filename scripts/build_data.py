@@ -11,6 +11,7 @@ Reads
   data/processed/revstats_income_tax_split.csv OECD Revenue Statistics 1100/1200/1300 (download_sources.py)
   data/processed/revstats_consumption_taxes.csv OECD Revenue Statistics 5111-5123 (download_sources.py)
   data/processed/argentina.json                Argentina from IMF, Argentine Ministry of Economy, SIPRI, OECD LAC (argentina.py)
+  data/processed/partners.json                 China, India, Brazil, Indonesia, Saudi Arabia, South Africa from IMF and OECD (partners.py)
   data/processed/debt.json                     government, household and corporate debt, IMF Global Debt Database (debt.py)
   src/template.html                            the dashboard, with a __DATA__ placeholder
 
@@ -116,6 +117,16 @@ if os.path.exists(arg_path):
     for y, v in json.load(open(arg_path)).items():
         if int(y) >= 1995: V[("ARG", int(y))] = v
 
+# ---------- large non-OECD G20 economies (built by partners.py; replaces partial OECD rows for Brazil and Indonesia) ----------
+partners_path = f"{PROC}/partners.json"
+if os.path.exists(partners_path):
+    P = json.load(open(partners_path))
+    for c, years in P["data"].items():
+        names[c] = P["names"][c]
+        for k in [k for k in V if k[0] == c]: del V[k]
+        for y, v in years.items():
+            if int(y) >= 1995: V[(c, int(y))] = v
+
 # ---------- debt by sector (% of GDP) ----------
 debt_path = f"{PROC}/debt.json"
 if os.path.exists(debt_path):
@@ -152,7 +163,8 @@ with open(f"{ROOT}/data/explorer_dataset.csv", "w", newline="") as fh:
     for r in rows:
         c, y, nm = r["c"], r["y"], names.get(r["c"], r["c"])
         alt = bool(r.get("alt"))   # Argentina: every value comes from non-OECD sources
-        SRC_NA = "IMF Fiscal Monitor; Argentina Ministry of Economy; SIPRI; OECD Revenue Statistics LAC" if alt else "OECD National Accounts"
+        SRC_NA = ("IMF Fiscal Monitor; Argentina Ministry of Economy; SIPRI; OECD Revenue Statistics LAC" if c == "ARG" else
+                  "IMF Fiscal Monitor; IMF GFS (COFOG); OECD Global Revenue Statistics") if alt else "OECD National Accounts"
         def put(group, code, name, level, val, unit="pct_gdp", est=False, src=SRC_NA):
             if val is not None: w.writerow([c, nm, y, group, code, name, level, val, unit, int(est or alt), SRC_NA if alt else src])
         put("total", "revenue", "Total revenue", 0, r.get("rev"))
