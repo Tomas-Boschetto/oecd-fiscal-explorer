@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Public Finance Explorer</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -747,7 +748,7 @@ function drawChart(list,tot){
   if(!list.length){el.innerHTML=`<div class="empty">No countries match. Pick some countries, or untick “Only countries with complete data”.</div>`;return;}
   const W=Math.max(320,el.clientWidth||900), narrow=W<600;
   const showBal=m.debt?ys2()>1:!m.sub, rv=r=>m.debt?r.chg:r.bal;
-  const gdpW=narrow?0:78;
+  const gdpW=narrow?50:78;
   const labW=narrow?96:170, balW=showBal?(narrow?92:170):0, gap=narrow?8:16, plotW=Math.max(80,W-labW-gdpW-balW-gap*(showBal?2:1)-(showBal?0:40));
   // In US$ the "all shown" total would dwarf every country, so it lives only in the summary tiles.
   const showTot=tot&&S.unit==="pct";
@@ -763,7 +764,7 @@ function drawChart(list,tot){
   const bx0=labW+gdpW+gap+plotW+gap, bmid=bx0+balW*(narrow?.5:.42), bscale=(balW*(narrow?.5:.42)-2)/bmax;
   const ticks=niceTicks(max,narrow?3:6);
   let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc($("ctitle").textContent)}"><g class="axis">`;
-  for(const t of ticks){const xx=x(t); s+=`<line x1="${xx}" x2="${xx}" y1="${top-4}" y2="${H-4}" stroke="var(--grid)" stroke-width="1"/><text x="${xx}" y="${top-10}" text-anchor="middle">${axisFmt(t)}</text>`;}
+  for(const t of ticks){const xx=x(t); s+=`<line x1="${xx}" x2="${xx}" y1="${top-4}" y2="${H-4}" stroke="var(--grid)" stroke-width="1"/><text x="${xx}" y="${top-10}" text-anchor="${t===0?"start":"middle"}">${axisFmt(t)}</text>`;}
   if(showBal) s+=`<line x1="${bmid}" x2="${bmid}" y1="${top-4}" y2="${H-4}" stroke="var(--line)" stroke-width="1"/><text x="${bmid}" y="${top-10}" text-anchor="middle">${m.debt?"Change":"Balance"}</text>`;
   if(gdpW) s+=`<text x="${labW+gdpW}" y="${top-10}" text-anchor="end">GDP</text>`;
   s+=`</g>`;
@@ -772,7 +773,7 @@ function drawChart(list,tot){
     s+=`<g class="row${r.avg?" avg":""}" data-i="${i}"><rect class="hit" x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent" rx="4"/>`;
     const nm=(narrow?(r.avg?"All shown":r.c):r.name)+(!r.avg&&!r.complete?"*":"")+((r.est||r.alt)&&!r.avg?" (est.)":"");
     s+=`<text class="cname" x="${labW}" y="${cy+4}" text-anchor="end">${esc(trunc(nm,narrow?14:26))}</text>`;
-    if(gdpW&&r.gdpv!=null) s+=`<text class="bval gdp" x="${labW+gdpW}" y="${cy+4}" text-anchor="end">${fmtGdp(r.gdpv)}</text>`;
+    if(gdpW&&r.gdpv!=null) s+=`<text class="bval gdp" x="${labW+gdpW}" y="${cy+4}" text-anchor="end">${narrow?fmtGdp(r.gdpv).replace(" ",""):fmtGdp(r.gdpv)}</text>`;
     const bh=11, by=y+4;
     if(r.parts){ let acc=0; const segs=order.map(o=>({...o,v:r.parts[o.g.k]})).filter(o=>o.v>0);
       segs.forEach((o,si)=>{const x0=x(acc), x1=x(acc+o.v); acc+=o.v; const w=Math.max(0,x1-x0-(si<segs.length-1?2:0));
