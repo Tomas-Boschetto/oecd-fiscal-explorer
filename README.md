@@ -13,6 +13,7 @@ subcategories:
   Each splits further, for example personal vs corporate income tax, or VAT and sales taxes vs excise.
 - **Balance**: revenue minus spending (net lending / borrowing).
 - **Debt** by sector: government, households and non-financial companies, from the IMF Global Debt Database.
+- **GDP** by industry (8 sectors, about 50 industries) and by use (consumption, investment, government, net exports).
 
 Everything is general government (central, state and local government plus social security funds), on the national
 accounts basis (SNA 2008), so countries are comparable. **Argentina, Brazil, China, India, Indonesia, Saudi Arabia and South
@@ -35,7 +36,7 @@ What you can do:
 |---|---|
 | **Single year / Period** | Pick one year from the list, or a range such as 2015–2023. |
 | **Unit** | % of GDP, US$ billions at purchasing-power parity, or US$ billions at market exchange rates. Over a period, US$ figures are summed (cumulative) and % of GDP is the share of the period's combined GDP. |
-| **Break down** | Spending, Revenue or Debt. For debt, a period shows the level at its end and the change since its start. |
+| **Break down** | Spending, Revenue, Debt or GDP (by industry, drilling into industries, or by use). For debt, a period shows the level at its end and the change since its start. |
 | **Detail** | Main categories, or the subcategories of one category. Clicking a coloured segment does the same; **← All categories** goes back. |
 | **Sort by** | Total, the comparison total, balance, name, or any single category. The category you sort by is drawn first, from the zero line. |
 | **Categories** | Turn categories or subcategories on and off. |
@@ -62,7 +63,7 @@ Columns of `explorer_dataset.csv`:
 |---|---|
 | `country_code`, `country` | ISO 3-letter code and name. Also includes the non-OECD G20 members (ARG, BRA, CHN, IDN, IND, SAU, ZAF; all values `estimated = 1`), Russia (partial OECD data, to 2019) and aggregates (EU, EA). |
 | `year` | Calendar year. |
-| `group` | `total`, `gdp`, `spending`, `revenue` or `debt`. |
+| `group` | `total`, `gdp`, `spending`, `revenue`, `debt`, `gdp_industry` or `gdp_use`. |
 | `code` | Spending: COFOG code, `07` (level 1) or `0703` (level 2). Revenue: `inc`, `prod`, `soc` (level 1) or e.g. `income.pit` (level 2). Totals: `revenue`, `spending`, `balance`, `gross_debt` (OECD national-accounts measure). Debt: `government`, `households`, `companies` (IMF). |
 | `name` | Plain-language label. |
 | `level` | 0 = totals, 1 = main category, 2 = subcategory. |
@@ -133,6 +134,12 @@ category (see below). The CSV keeps the published values, so subcategories may d
   Mexico, New Zealand and Argentina have no government debt there, so it comes from the IMF World Economic Outlook
   (`estimated = 1`). The IMF government-debt measure can differ from national, EU (Maastricht) and OECD
   national-accounts figures (`gross_debt` in the dataset).
+- **GDP structure**: OECD National Accounts, current prices. By industry: value added by ISIC Rev. 4 activity
+  (OECD Table 6), grouped into 8 sectors and about 50 industries; it adds up to gross value added (GDP minus taxes less
+  subsidies on products). Countries reporting some sections only in combined form get a "not allocated" remainder
+  (`code` `un`); those with under 80% allocated are left out. Most OECD countries plus Brazil (to 2015) and Saudi
+  Arabia. By use: GDP by expenditure (OECD Table 1) for all countries including the G20 economies; inventories are the
+  remainder and include the statistical discrepancy.
 - **What "health" and other categories cover** follows COFOG. For example, health excludes cash sickness benefits and
   much long-term care (both under social protection), and compulsory private insurance (e.g. Switzerland) is not
   government spending.
@@ -156,6 +163,13 @@ python3 scripts/build_data.py
 
 ```bash
 python3 scripts/partners.py
+python3 scripts/build_data.py
+```
+
+**GDP structure** (about 65 MB from the OECD):
+
+```bash
+python3 scripts/gdp.py
 python3 scripts/build_data.py
 ```
 
@@ -203,6 +217,7 @@ scripts/extract_*.py           extract subcategories from OECD tables 11 and 12
 scripts/us_subcategories.py    US subcategory shares from BEA and CMS
 scripts/argentina.py           Argentina from IMF, Ministry of Economy, SIPRI and OECD LAC
 scripts/debt.py                debt by sector from the IMF Global Debt Database
+scripts/gdp.py                 GDP by industry and by use from the OECD National Accounts
 scripts/partners.py            China, India, Brazil, Indonesia, Saudi Arabia, South Africa from IMF and OECD
 scripts/build_data.py          builds the dataset and the dashboard
 src/template.html              dashboard source
@@ -213,6 +228,7 @@ src/template.html              dashboard source
 | Source | Used for | Terms |
 |---|---|---|
 | OECD National Accounts: *National Accounts at a Glance* ch. 6; Tables 1, 11 and 12 ([OECD Data Explorer](https://data-explorer.oecd.org/)) | Totals, categories, subcategories, revenue detail, GDP | OECD data are published under [CC BY 4.0](https://www.oecd.org/en/about/terms-conditions.html) |
+| OECD National Accounts: value added by activity (Table 6), GDP by expenditure (Table 1) | GDP by industry and by use | OECD terms (CC BY 4.0) |
 | OECD Revenue Statistics | Income-tax split, sales taxes | Same as above |
 | US Bureau of Economic Analysis, NIPA table 3.16 | US spending subcategories (except health) | US government work, public domain |
 | US Centers for Medicare & Medicaid Services, National Health Expenditure Accounts | US health subcategories | US government work, public domain |

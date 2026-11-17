@@ -59,9 +59,9 @@
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.45}
 .wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
-header{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:baseline;justify-content:space-between}
+header{display:block;flex-wrap:wrap;gap:6px 24px;align-items:baseline;justify-content:space-between}
 h1{font-family:var(--f-display);font-weight:600;font-size:26px;letter-spacing:-.01em;margin:0;text-wrap:balance}
-.sub{color:var(--fg2);margin:0;max-width:70ch}
+.sub{color:var(--fg2);margin:0}
 .src{font-size:12px;color:var(--muted)}
 .src a{color:var(--accent)}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
@@ -114,7 +114,8 @@ details[open] summary{margin-bottom:8px}
 #chart .row:hover .hit,#chart .row.hl .hit{fill:var(--chip)}
 #chart .seg{cursor:pointer}
 #chart .seg:hover{opacity:.8}
-#chart .bval.gdp{fill:var(--muted)}
+#chart .bval.gdp{fill:var(--fg);font-size:11.5px}
+#chart .gdphead{fill:var(--fg)!important;font-weight:600}
 #chart .bval{font-family:var(--f-mono);font-size:11px;font-variant-numeric:tabular-nums}
 .tip{position:fixed;z-index:20;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.14);padding:10px 12px;font-size:12.5px;width:290px;max-width:calc(100vw - 24px)}
 .tip h4{margin:0 0 2px;font-size:14px;font-family:var(--f-display)}
@@ -139,7 +140,7 @@ table.data td:first-child{font-family:var(--f-body)}
   <header>
     <div>
       <h1>Public Finance Explorer</h1>
-      <p class="sub">What governments spend and collect, their deficits, and the debt of governments, households and companies, across OECD and G20 economies since 1995. Pick a year or a period, then narrow countries and categories.</p>
+      <p class="sub">What governments spend and collect, their deficits, the debt of governments, households and companies, and what each economy produces, across OECD and G20 economies since 1995. Pick a year or a period, then narrow countries and categories.</p>
     </div>
   </header>
   <nav class="tabs" aria-label="Sections">
@@ -167,7 +168,7 @@ table.data td:first-child{font-family:var(--f-body)}
         </select>
       </div>
       <div class="field"><span class="lbl">Break down</span>
-        <div class="seg" role="group" aria-label="Breakdown"><button id="bSpend" aria-pressed="true">Spending</button><button id="bRev" aria-pressed="false">Revenue</button><button id="bDebt" aria-pressed="false">Debt</button></div>
+        <div class="seg" role="group" aria-label="Breakdown"><button id="bSpend" aria-pressed="true">Spending</button><button id="bRev" aria-pressed="false">Revenue</button><button id="bDebt" aria-pressed="false">Debt</button><button id="bGdp" aria-pressed="false">GDP</button></div>
       </div>
       <div class="field" id="detailBox"><span class="lbl">Detail</span><select id="detail" aria-label="Detail level"></select></div>
       <div class="field"><span class="lbl">Sort by</span><select id="sort"></select></div>
@@ -207,7 +208,7 @@ table.data td:first-child{font-family:var(--f-body)}
     <article class="panel doc">
       <h2>Categories</h2>
       <p>Spending follows the UN Classification of the Functions of Government (COFOG), which every country here uses, so “health” or “education” mean the same thing everywhere. Each category below lists the subcategories you can drill into. In the main spending view, environmental protection, housing and community amenities, and recreation and culture are shown together as one bar. Revenue follows the national-accounts categories.</p>
-      <p class="toc"><a href="#cat-spending">Spending categories</a> · <a href="#cat-revenue">Revenue sources</a> · <a href="#cat-balance">Balance</a> · <a href="#cat-debt">Debt</a></p>
+      <p class="toc"><a href="#cat-spending">Spending categories</a> · <a href="#cat-revenue">Revenue sources</a> · <a href="#cat-balance">Balance</a> · <a href="#cat-debt">Debt</a> · <a href="#cat-gdp">GDP</a></p>
       <h3 class="sect" id="cat-spending">Spending categories</h3>
       <div class="catgrid" id="catSpend"></div>
       <h3 class="sect" id="cat-revenue">Revenue sources</h3>
@@ -220,6 +221,18 @@ table.data td:first-child{font-family:var(--f-body)}
         <section class="catcard"><h3>Government</h3><p>Gross debt of general government: bonds, bills and loans owed by central, state and local government and social security funds. Japan's government debt is about 240% of GDP, Germany's about 63%. A large share is often owed to the country's own residents and central bank.</p><p class="excl"><b>Not included:</b> debt of public companies (for example state-owned utilities or railways run as companies) and future pension promises. Assets are not subtracted, so this is gross, not net, debt.</p></section>
         <section class="catcard"><h3>Households</h3><p>Loans and debt securities owed by households, mostly mortgages, plus consumer credit, car loans, credit cards and student loans. High where home ownership is financed with long mortgages, as in Switzerland, Australia, the Netherlands or the Nordic countries; very low in Argentina, where little credit is available.</p><p class="excl"><b>Not included:</b> unpaid bills and informal loans between people.</p></section>
         <section class="catcard"><h3>Non-financial companies</h3><p>Bank loans and bonds owed by businesses outside the financial sector: manufacturers, retailers, energy and property companies. Countries hosting holding companies or multinational treasuries (Luxembourg, Ireland, the Netherlands) show very high figures that reflect cross-border finance more than domestic borrowing.</p><p class="excl"><b>Not included:</b> debt of banks and other financial companies, trade credit between firms, and equity.</p></section>
+      </div>
+      <h3 class="sect" id="cat-gdp">GDP</h3>
+      <p>GDP (gross domestic product) is the value of everything produced in a country in a year. It can be split in two ways, both available under <i>Break down → GDP</i>.</p>
+      <p><b>By industry</b> shows which sectors produce it, as value added (output minus the inputs bought from other firms). Value added adds up to <i>gross value added</i>, which is GDP minus taxes less subsidies on products (such as VAT); that gap, usually 5–15% of GDP, is the space between the bars and the thin GDP bar.</p>
+      <div class="catgrid" id="catGdpInd"></div>
+      <p><b>By use</b> shows what the output is used for. The five parts add up to GDP:</p>
+      <div class="catgrid">
+        <section class="catcard"><h3>Household consumption</h3><p>What households (and non-profits serving them) spend on goods and services: food, rent, cars, holidays, phone bills. It includes the imputed rent homeowners “pay” themselves. Usually the largest use, about 50–70% of GDP; lower in China (under 40%), where investment is unusually high.</p></section>
+        <section class="catcard"><h3>Government consumption</h3><p>Services the government provides and pays for: teachers', doctors' and soldiers' salaries, medicines it buys for patients, office running costs. It excludes cash transfers such as pensions and unemployment benefits, which households then spend themselves.</p></section>
+        <section class="catcard"><h3>Investment (fixed capital)</h3><p>Spending on assets that last more than a year: buildings and homes, roads, machinery, vehicles, software and research. Made by companies, households (new homes) and the government (public infrastructure).</p></section>
+        <section class="catcard"><h3>Inventories and statistical discrepancy</h3><p>The change in stocks of unsold goods and materials, plus small differences between ways of measuring GDP. Usually close to zero; it can be negative when firms run down their stocks.</p></section>
+        <section class="catcard"><h3>Net exports</h3><p>Exports minus imports of goods and services. Positive for countries that sell more abroad than they buy (Germany, China, Saudi Arabia); negative for trade-deficit countries such as the US or India, in which case it is drawn left of the zero line. Exports and imports themselves are in the downloadable dataset.</p></section>
       </div>
     </article>
   </div>
@@ -234,7 +247,7 @@ table.data td:first-child{font-family:var(--f-body)}
         <tbody>
           <tr><th>Single year / Period</th><td>Pick one year from the list, or a range of years.</td></tr>
           <tr><th>Unit</th><td><b>% of GDP</b> compares the size of government across countries. <b>US$ (PPP)</b> converts with purchasing-power parities, which suits comparing real effort. <b>US$ (exchange rates)</b> reflects market value. For a period, US$ figures are added up over the years; % of GDP is the share of the period's combined GDP (a GDP-weighted average).</td></tr>
-          <tr><th>Break down</th><td>Spending by category, revenue by source, or debt by sector (government, households, companies).</td></tr>
+          <tr><th>Break down</th><td>Spending by category, revenue by source, debt by sector (government, households, companies), or GDP by industry or by use.</td></tr>
           <tr><th>Detail</th><td>Main categories, or the subcategories of one of them. Clicking a coloured segment does the same; <i>← All categories</i> goes back. See the <a href="#categories">Categories</a> tab for what each one contains.</td></tr>
           <tr><th>Sort by</th><td>Total, the comparison total, balance, name, or any single category. The category you sort by is drawn first, from the zero line, so it lines up across countries.</td></tr>
           <tr><th>Categories</th><td>Turn categories on and off. The total and the thin bar keep using the full figures.</td></tr>
@@ -254,6 +267,7 @@ table.data td:first-child{font-family:var(--f-body)}
         <li><b>Spending subcategories</b> come from OECD Table 11 (COFOG level 2), available for 37 OECD countries. Where a country's subcategories don't add up exactly to its category total, they are scaled in proportion (usually by under 0.5 points of GDP, at most 2.4). The same applies to the categories against total spending.</li>
         <li><b>Revenue subcategories</b> come from OECD Table 12. "Other revenue" is total revenue minus taxes and social contributions.</li>
         <li><b>Grey bars</b> mean the country has no breakdown for that view and year.</li>
+        <li><b>GDP structure</b> comes from the OECD National Accounts at current prices. <i>By industry</i>: value added by economic activity (ISIC Rev. 4), grouped into 8 sectors and about 50 industries; industries combine ISIC divisions where countries report them together. Some countries report a few sections only in combined form, so their remainder is shown in grey as “not allocated”; countries with less than 80% of value added allocated are left out. Coverage: most OECD countries plus Brazil (to 2015) and Saudi Arabia; not China, India, Indonesia, Argentina or South Africa. <i>By use</i>: GDP by expenditure, for all countries including the G20 economies. Household consumption includes non-profit institutions serving households; inventories are computed as the remainder, so they include the statistical discrepancy.</li>
         <li><b>Debt</b> comes from the IMF Global Debt Database, in % of GDP: general government gross debt, and household and non-financial corporate debt (loans and debt securities). Debt is a stock, so a period shows the level at its end and the change since its start, not a sum or average. In US$, debt is converted with the same year's GDP. Government debt here is the IMF's measure and can differ from national or EU (Maastricht) figures, mainly in how debt is valued and which liabilities are counted. It also differs from the OECD's national-accounts debt used elsewhere in the dataset.</li>
         <li><b>Coverage.</b> Most OECD countries have complete data from 1995. Recent years are missing for some (for example Japan, Canada, New Zealand), and Türkiye and Australia lack revenue detail.</li>
       </ul>
@@ -294,6 +308,7 @@ table.data td:first-child{font-family:var(--f-body)}
           <tr><td><a href="https://www.imf.org/external/datamapper/">IMF Fiscal Monitor and World Economic Outlook</a></td><td>Totals and GDP for Argentina, Brazil, China, India, Indonesia, Saudi Arabia, South Africa</td><td><a href="https://www.imf.org/en/About/copyright-and-terms">IMF terms</a> (reuse with attribution)</td></tr>
           <tr><td>Argentina, Ministerio de Economía: <a href="https://datos.gob.ar/dataset/sspm-gasto-publico-consolidado">Gasto Público Consolidado</a></td><td>Argentina spending by category</td><td><a href="https://datos.gob.ar/acerca/seccion/terminos-y-condiciones">datos.gob.ar terms</a></td></tr>
           <tr><td><a href="https://data.imf.org/">IMF Government Finance Statistics</a> (COFOG)</td><td>Spending by category for Brazil, China, Indonesia, South Africa</td><td><a href="https://www.imf.org/en/About/copyright-and-terms">IMF terms</a> (reuse with attribution)</td></tr>
+          <tr><td>OECD National Accounts: value added by activity (Table 6), GDP by expenditure (Table 1)</td><td>GDP by industry and by use</td><td>CC BY 4.0</td></tr>
           <tr><td><a href="https://www.imf.org/external/datamapper/datasets/GDD">IMF Global Debt Database</a></td><td>Government, household and corporate debt</td><td><a href="https://www.imf.org/en/About/copyright-and-terms">IMF terms</a> (reuse with attribution)</td></tr>
           <tr><td>SIPRI Military Expenditure Database, via the <a href="https://data.worldbank.org/indicator/MS.MIL.XPND.GD.ZS">World Bank</a></td><td>Argentina defence</td><td><a href="https://datacatalog.worldbank.org/public-licenses">World Bank data licence</a>; credit SIPRI</td></tr>
         </tbody>
@@ -337,6 +352,8 @@ const RSUB={
   oth:[{k:"sal",name:"Sales of goods and services, fees"},{k:"int",name:"Interest received"},{k:"pin",name:"Other property income (dividends, rents, royalties)"},{k:"trf",name:"Transfers received"},{k:"cpt",name:"Capital taxes (inheritance, gift)"},{k:"kot",name:"Other capital transfers"}]
 };
 const DEBT=[{k:"gov",name:"Government"},{k:"hh",name:"Households"},{k:"nfc",name:"Non-financial companies"}];
+const GTREE=[...DATA.gdp.tree.map(g=>({k:g.k,name:g.name,subs:g.subs})),{k:"un",name:"Not allocated to a sector",subs:[]}];
+const GUSE=DATA.gdp.use.map(u=>({k:u.k,name:u.name}));
 const FUNCS={"01":"General public services","02":"Defence","03":"Public order and safety","04":"Economic affairs","05":"Environmental protection",
   "06":"Housing and community amenities","07":"Health","08":"Recreation, culture and religion","09":"Education","10":"Social protection"};
 const LABELS=DATA.labels;
@@ -364,7 +381,7 @@ const YEARS=[...new Set(DATA.rows.map(r=>r.y))].filter(y=>y>=1995&&y<=2024).sort
 const MINY=YEARS[0], MAXY=YEARS[YEARS.length-1];
 
 /* ---------- state ---------- */
-const S={mode:"single",year:2023,from:2015,to:2023,unit:"pct",brk:"spend",detail:"main",rdetail:"main",ddetail:"main",sort:"total",
+const S={mode:"single",year:2023,from:2015,to:2023,unit:"pct",brk:"spend",detail:"main",rdetail:"main",ddetail:"main",gdetail:"ind",sort:"total",
   spend:SPEND.map(g=>g.k),rev:REV.map(g=>g.k),dsel:{},ctys:[...BASE],partners:false,complete:true,table:false};
 try{const s=JSON.parse(localStorage.getItem("fbx-state")||"null"); if(s&&typeof s==="object") Object.assign(S,s);}catch(e){}
 if(S.brk==="socp"){S.brk="spend";S.detail="10";}
@@ -376,6 +393,12 @@ function save(){try{localStorage.setItem("fbx-state",JSON.stringify(S));}catch(e
 
 /* The current view: what the thick bar breaks down, and what the thin bar shows. */
 function M(){
+  if(S.brk==="gdp"){
+    if(S.gdetail==="use") return {kind:"guse",gdp:true,key:"guse",groups:GUSE,title:"GDP by use",other:null,catLbl:"Uses of GDP",vs:""};
+    if(S.gdetail&&S.gdetail.startsWith("g:")){ const g=GTREE.find(x=>"g:"+x.k===S.gdetail);
+      if(g) return {kind:"gsub",gdp:true,sub:true,key:"gs"+g.k,gk:g.k,name:g.name,groups:g.subs,title:`${g.name}: industries`,other:null,catLbl:`${g.name}: industries`,vs:"",shareOf:"gdp"}; }
+    return {kind:"gind",gdp:true,key:"gind",groups:GTREE.filter(g=>g.k!=="un"||true),title:"GDP by industry",other:"GDP (gap = taxes less subsidies on products)",catLbl:"Industries",vs:""};
+  }
   if(S.brk==="debt"){
     const priv=S.ddetail==="private";
     return {kind:"debt",debt:true,key:priv?"dpriv":"dall",groups:priv?DEBT.slice(1):DEBT,title:priv?"Private debt by sector":"Debt by sector",other:null,catLbl:"Debt by sector",vs:""};
@@ -405,7 +428,8 @@ function setSel(arr){ const m=M(); if(m.kind==="rev") S.rev=arr; else if(m.kind=
 /* ---------- data per country-year (values in % of GDP) ---------- */
 const NEED=["f01","f02","f03","f04","f06","f07","f08","f09","f10"];
 function yearParts(r){
-  if(!r||r.rev==null||r.exp==null) return null;
+  if(!r) return null;
+  if((r.rev==null||r.exp==null)&&S.brk!=="gdp") return null;
   const o={alt:!!r.alt,rev:r.rev,exp:r.exp,bal:r.bal??(r.rev-r.exp),spend:null,revp:null,fn:{},sub:{},rsub:{},est:[...(r.est||[]),...(r.inc_est?["rinc"]:[]),...(r.prd_est?["rprd"]:[])],gdp:{ppp:r.gdp_ppp,exc:r.gdp_exc}};
   if(NEED.every(c=>r[c]!=null)){
     // The function split can differ slightly from total spending; scale it so it adds up.
@@ -419,6 +443,8 @@ function yearParts(r){
       if(s>0){ const k=o.fn[fn]/s; o.sub[fn]={}; for(const g of groups) o.sub[fn][g.k]=raw[g.k]*k; }
     }
   }
+  o.gind=r.gi?Object.fromEntries(GTREE.map(g=>[g.k,r.gi[g.k]||0])):null; o.guse=r.gu||null; o.gsub={};
+  if(r.gi&&r.gs) for(const g of GTREE){ if(g.subs.some(s=>r.gs[s.k]!=null)){ o.gsub[g.k]={}; for(const s of g.subs) o.gsub[g.k][s.k]=r.gs[s.k]??0; } }
   if(r.r_inc!=null&&r.r_prod!=null&&r.r_soc!=null)
     o.revp={inc:r.r_inc,prd:r.r_prod,ssc:r.r_soc,oth:Math.max(0,r.rev-r.r_inc-r.r_prod-r.r_soc)};
   // Revenue subcategories, scaled so they add up to each source's total
@@ -434,6 +460,9 @@ function viewOf(p){
   if(m.kind==="rev") return {parts:p.revp,full:p.rev,other:p.exp};
   if(m.kind==="spend") return {parts:p.spend,full:p.exp,other:p.rev};
   if(m.kind==="rsub") return {parts:p.rsub[m.rg]||null,full:p.revp?p.revp[m.rg]:null,other:null};
+  if(m.kind==="gind") return {parts:p.gind,full:p.gind?Object.values(p.gind).reduce((a,v)=>a+v,0):null,other:100};
+  if(m.kind==="guse") return {parts:p.guse,full:p.guse?100:null,other:null};
+  if(m.kind==="gsub") return {parts:p.gsub[m.gk]||null,full:p.gind?p.gind[m.gk]:null,other:null};
   const t=p.fn[m.fn]; return {parts:p.sub[m.fn]||null,full:t??null,other:null};
 }
 function yearsShown(){ if(S.mode==="single") return [S.year]; const a=Math.min(S.from,S.to),b=Math.max(S.from,S.to); const ys=[]; for(let y=a;y<=b;y++) ys.push(y); return ys; }
@@ -457,7 +486,7 @@ function aggregate(c,ys){
     if(v.parts) for(const g of m.groups) acc.parts[g.k]+=v.parts[g.k]*w;
   });
   const div=S.unit==="pct"?W:1;
-  const est=!!m.sub&&have.some(i=>parts[i].est.includes(m.key)), alt=have.some(i=>parts[i].alt);
+  const est=!!m.sub&&have.some(i=>parts[i].est.includes(m.key)), alt=!m.gdp&&have.some(i=>parts[i].alt);   // GDP structure is OECD data, not an estimate
   return {c,name:NAMES[c],n:have.length,of:ys.length,complete:have.length===ys.length,
     brkComplete:views.every(v=>v.parts),fullComplete:views.every(v=>v.full!=null),est,alt,
     rev:acc.rev/div,exp:acc.exp/div,bal:acc.bal/div,
@@ -569,6 +598,16 @@ const REV_DESC={
     cpt:"Taxes on inheritances, gifts and other capital transfers.",
     kot:"Other one-off capital transfers received, such as EU investment grants or payments from companies to the state."}}
 };
+const GDP_DESC={
+  agr:"Farming, livestock, forestry and fishing. Small in rich economies (1–2% of GDP), larger in emerging ones.",
+  min:"Extracting oil, gas, coal and minerals, plus electricity, gas and water utilities and waste management. Large where natural resources dominate, such as Norway, Australia or Saudi Arabia.",
+  man:"Factories turning materials into goods, from food and medicines to cars and machinery. About 10% of GDP in the US, nearly 20% in Germany, Japan or Korea.",
+  con:"Building homes, offices and infrastructure, including renovation.",
+  trd:"Shops and wholesalers, transport and logistics, hotels and restaurants: the businesses that move and sell goods and host visitors.",
+  inf:"Telecoms, software, media, banks and insurers, and real estate. Real estate includes the imputed rent of people living in their own homes, which keeps GDP comparable between countries with different home ownership.",
+  bus:"Services sold to other businesses: lawyers, accountants, consultants, engineers, research labs, advertising, staffing agencies, rental, security and cleaning.",
+  pub:"Public administration and defence, schools, hospitals and care homes (public or private), culture, sport and other personal services. Government services are valued at what they cost to provide."
+};
 function buildCategories(){
   const card=(title,code,desc,items,excl)=>`<section class="catcard"><h3>${esc(title)}${code?` <span class="code">${code}</span>`:""}</h3><p>${desc}</p>`+
     `<ul class="sublist">${items.map(([c,n,d])=>`<li><span class="code">${c}</span><span><b>${esc(n)}</b>${d?`<span class="sd">${esc(d)}</span>`:""}</span></li>`).join("")}</ul>`+
@@ -577,6 +616,7 @@ function buildCategories(){
     Object.keys(LABELS).filter(c=>c.length===4&&c.startsWith(fn)).sort().map(c=>[`${+fn}.${+c.slice(2)}`,LABELS[c],SUB_DESC[c]||""]),FN_DESC[fn].x)).join("");
   const rev=REV.map(g=>card(g.name,"",REV_DESC[g.k].d,RSUB[g.k].map(p=>["",p.name,REV_DESC[g.k].parts[p.k]]),"")).join("");
   $("catSpend").innerHTML=spend; $("catRev").innerHTML=rev;
+  $("catGdpInd").innerHTML=GTREE.filter(g=>g.subs.length).map(g=>card(g.name,"",GDP_DESC[g.k]||"",g.subs.map(s=>["",s.name,""]),"")).join("");
 }
 
 /* ---------- formatting ---------- */
@@ -590,7 +630,7 @@ function fmt(v,signed){
 }
 const unitLabel=()=>({pct:"% of GDP",ppp:"US$, PPP",exc:"US$, exchange rates"})[S.unit];
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
-const color=i=>`var(--s${i+1})`;
+const color=i=>i>=8?"var(--nodata)":`var(--s${i+1})`;   // a 9th group (GDP: not allocated) is grey
 const gi=k=>M().groups.findIndex(g=>g.k===k);
 
 /* ---------- controls ---------- */
@@ -605,6 +645,7 @@ function buildControls(){
   $("bSpend").onclick=()=>{S.brk="spend";resetSort();render();};
   $("bRev").onclick=()=>{S.brk="rev";resetSort();render();};
   $("bDebt").onclick=()=>{S.brk="debt";resetSort();render();};
+  $("bGdp").onclick=()=>{S.brk="gdp";resetSort();render();};
   $("detail").onchange=e=>drill(e.target.value);
   $("back").onclick=()=>drill("main");
   $("year").onchange=e=>{S.year=+e.target.value;render();};
@@ -619,7 +660,7 @@ function buildControls(){
   $("copy").onclick=copyCSV;
 }
 function resetSort(){ if(!["total","rev","bal","name"].includes(S.sort)) S.sort="total"; }
-function drill(v){ if(S.brk==="rev") S.rdetail=v; else if(S.brk==="debt") S.ddetail=v; else S.detail=v; resetSort(); hideTip(); render(); }
+function drill(v){ if(S.brk==="gdp"&&v==="main") v="ind"; if(S.brk==="rev") S.rdetail=v; else if(S.brk==="debt") S.ddetail=v; else if(S.brk==="gdp") S.gdetail=v; else S.detail=v; resetSort(); hideTip(); render(); }
 
 function syncControls(){
   const m=M();
@@ -627,17 +668,17 @@ function syncControls(){
   $("singleBox").hidden=S.mode!=="single"; $("rangeBox").hidden=S.mode!=="range";
   $("year").value=S.year; $("from").value=S.from; $("to").value=S.to;
   $("unit").value=S.unit; $("partners").checked=S.partners; $("complete").checked=S.complete; $("showTable").checked=S.table;
-  $("bSpend").setAttribute("aria-pressed",S.brk==="spend"); $("bRev").setAttribute("aria-pressed",S.brk==="rev"); $("bDebt").setAttribute("aria-pressed",S.brk==="debt");
-  $("detail").innerHTML=S.brk==="debt"?`<option value="main">All sectors</option><option value="private">Private sector only</option>`:`<option value="main">Main ${S.brk==="rev"?"sources":"categories"}</option>`+(S.brk==="rev"
+  $("bSpend").setAttribute("aria-pressed",S.brk==="spend"); $("bRev").setAttribute("aria-pressed",S.brk==="rev"); $("bDebt").setAttribute("aria-pressed",S.brk==="debt"); $("bGdp").setAttribute("aria-pressed",S.brk==="gdp");
+  $("detail").innerHTML=S.brk==="gdp"?`<option value="ind">By industry</option><option value="use">By use (consumption, investment, trade)</option>`+GTREE.filter(g=>g.subs.length).map(g=>`<option value="g:${g.k}">Industries: ${esc(g.name)}</option>`).join(""):S.brk==="debt"?`<option value="main">All sectors</option><option value="private">Private sector only</option>`:`<option value="main">Main ${S.brk==="rev"?"sources":"categories"}</option>`+(S.brk==="rev"
     ?REV.map(g=>`<option value="${g.k}">Subcategories: ${esc(g.name)}</option>`).join("")
     :Object.entries(FUNCS).map(([k,v])=>`<option value="${k}">Subcategories: ${esc(v)}</option>`).join(""));
-  $("detail").value=S.brk==="rev"?S.rdetail:S.brk==="debt"?S.ddetail:S.detail;
-  $("back").hidden=!(m.sub||(m.debt&&S.ddetail!=="main")); $("back").textContent=S.brk==="rev"?"← All sources":S.brk==="debt"?"← All sectors":"← All categories";
+  $("detail").value=S.brk==="rev"?S.rdetail:S.brk==="debt"?S.ddetail:S.brk==="gdp"?S.gdetail:S.detail;
+  $("back").hidden=!(m.sub||(m.debt&&S.ddetail!=="main")); $("back").textContent=S.brk==="rev"?"← All sources":S.brk==="debt"?"← All sectors":S.brk==="gdp"?"← All industries":"← All categories";
   const groups=m.groups, sel=SEL();
   $("catLbl").textContent=m.catLbl;
   $("cats").innerHTML=groups.map((g,i)=>`<label class="chip${sel.includes(g.k)?"":" off"}"><input type="checkbox" value="${g.k}"${sel.includes(g.k)?" checked":""}><span class="sw" style="background:${color(i)}"></span>${esc(g.name)}</label>`).join("");
   const sub=!!m.sub;
-  const opts=[["total",m.title+" (selected)"],...(m.debt?(S.mode==="range"?[["chg","Change over the period (largest increase first)"]]:[]):sub?[]:[["rev",m.other],["bal","Balance (deficit first)"]]),["name","Country name"],...groups.filter(g=>sel.includes(g.k)).map(g=>["c:"+g.k,g.name])];
+  const opts=[["total",m.title+" (selected)"],...(m.gdp?[]:m.debt?(S.mode==="range"?[["chg","Change over the period (largest increase first)"]]:[]):sub?[]:[["rev",m.other],["bal","Balance (deficit first)"]]),["name","Country name"],...groups.filter(g=>sel.includes(g.k)).map(g=>["c:"+g.k,g.name])];
   if(!opts.some(o=>o[0]===S.sort)) S.sort="total";
   $("sort").innerHTML=opts.map(([v,t])=>`<option value="${v}">${esc(t)}</option>`).join(""); $("sort").value=S.sort;
   document.querySelectorAll("#ctys .chip").forEach(ch=>{const c=ch.dataset.c; const on=S.ctys.includes(c); ch.classList.toggle("off",!on); ch.querySelector("input").checked=on;
@@ -677,7 +718,7 @@ function computeRows(){
   const aggFn=m.debt?aggregateDebt:aggregate;
   let list=S.ctys.filter(c=>S.partners||BASE.includes(c)).map(c=>{const a=aggFn(c,ys); if(!a) excluded.push(NAMES[c]); return a;}).filter(Boolean);
   // In the main views a country without a breakdown still shows (as a grey bar); subcategory views need the breakdown.
-  if(S.complete) list=list.filter(r=>{const ok=r.complete&&(m.sub?r.brkComplete:true); if(!ok) excluded.push(r.name); return ok;});
+  if(S.complete) list=list.filter(r=>{const ok=r.complete&&((m.sub||m.gdp)?r.brkComplete:true); if(!ok) excluded.push(r.name); return ok;});
   list.forEach(setMain);
   for(const r of list){ const g=gdpOf(r.c,ys); r.gdpv=g?g.v:null; r.gdpy=g?g.y:null; }
   const sv=r=>S.sort==="chg"?(r.chg??-1e9):S.sort==="total"?(r.main??-1e9):S.sort==="rev"?(r.other??-1e9):S.sort==="bal"?-r.bal:S.sort.startsWith("c:")?(r.parts?.[S.sort.slice(2)]??-1e9):0;
@@ -712,28 +753,34 @@ function render(){
   const period=ys.length===1?`${ys[0]}`:`${ys[0]}–${ys[ys.length-1]}`;
   const cum=S.unit!=="pct"&&ys.length>1;
   $("ctyCount").textContent=`${list.length} shown of ${S.ctys.filter(c=>S.partners||BASE.includes(c)).length} selected`;
-  $("ctitle").textContent=`${m.title}${m.sub||m.debt?"":" vs "+m.vs}, ${period} · ${unitLabel()}${m.debt?(ys.length>1?" (level at the end, change since the start)":""):cum?" (cumulative)":ys.length>1?" (period average)":""}`;
+  $("ctitle").textContent=`${m.title}${m.sub||m.debt||m.gdp?"":" vs "+m.vs}, ${period} · ${unitLabel()}${m.debt?(ys.length>1?" (level at the end, change since the start)":""):cum?" (cumulative)":ys.length>1?" (period average)":""}`;
   const sm=$("summary");
   if(tot){
+    function gdpNote(){ const g=tot.gdpv; return (g!=null?`combined GDP ${fmtGdp(g)}${S.unit==="ppp"?" (PPP)":""} · `:"")+(m.debt&&ys.length>1?`level at the end of ${ys[ys.length-1]}`:period+(ys.length>1?` (${ys.length} years)`:"")); }
     const cov=n=>n<list.length?`${n} of ${list.length} countries with data`:tot.name;
     const chgNote=v=>ys.length>1&&v!=null?`${fmtChg(v)} since ${ys[0]}`:tot.name;
-    const tiles=m.debt
-      ?[["Total debt",fmt(tot.dtot),chgNote(tot.dchg)],["Government",fmt(tot.dg),tot.name],["Private (households + companies)",fmt(tot.dp),tot.name],["Countries",String(list.length),ys.length>1?`level at the end of ${ys[ys.length-1]}`:period]]
+    const tiles=m.gdp
+      ?[["GDP of all shown",fmtGdp(tot.gdpv),S.unit==="ppp"?"US$ at PPP":"US$ at market exchange rates"],[m.kind==="guse"?"Largest use":m.kind==="gsub"?"Largest industry":"Largest sector",largest(tot).v,largest(tot).name],
+        m.kind==="guse"?["Net exports",fmt(tot.parts?tot.parts.nx:null,true),tot.name]:m.kind==="gsub"?[m.name,fmt(tot.full),tot.name]:["Gross value added",fmt(tot.full),"GDP minus taxes less subsidies on products"],["Countries",String(list.length),gdpNote()]]
+      :m.debt
+      ?[["Total debt",fmt(tot.dtot),chgNote(tot.dchg)],["Government",fmt(tot.dg),tot.name],["Private (households + companies)",fmt(tot.dp),tot.name],["Countries",String(list.length),gdpNote()]]
       :m.sub
-      ?[[m.name,fmt(tot.full),cov(tot.nFull)],[`Share of all ${m.shareOf}`,tot.full!=null&&tot.fullBase?(tot.full/tot.fullBase*100).toFixed(1)+"%":"–",cov(tot.nFull)],["Largest subcategory",largest(tot).v,largest(tot).name+(tot.nParts<list.length?` (${tot.nParts} countries with detail)`:"")],["Countries",String(list.length),period+(ys.length>1?` (${ys.length} years)`:"")]]
-      :[["Spending",fmt(tot.exp),tot.name],["Revenue",fmt(tot.rev),tot.name],["Balance",fmt(tot.bal,true),`${list.filter(r=>r.bal<0).length} in deficit, ${list.filter(r=>r.bal>=0).length} in surplus`],["Countries",String(list.length),period+(ys.length>1?` (${ys.length} years)`:"")]];
+      ?[[m.name,fmt(tot.full),cov(tot.nFull)],[`Share of all ${m.shareOf}`,tot.full!=null&&tot.fullBase?(tot.full/tot.fullBase*100).toFixed(1)+"%":"–",cov(tot.nFull)],["Largest subcategory",largest(tot).v,largest(tot).name+(tot.nParts<list.length?` (${tot.nParts} countries with detail)`:"")],["Countries",String(list.length),gdpNote()]]
+      :[["Spending",fmt(tot.exp),tot.name],["Revenue",fmt(tot.rev),tot.name],["Balance",fmt(tot.bal,true),`${list.filter(r=>r.bal<0).length} in deficit, ${list.filter(r=>r.bal>=0).length} in surplus`],["Countries",String(list.length),gdpNote()]];
     sm.innerHTML=tiles.map(([l,v,n])=>`<div class="stat"><span class="lbl">${esc(l)}</span><span class="v">${v}</span><span class="n">${esc(n)}</span></div>`).join("");
   } else sm.innerHTML="";
   const sel=SEL();
   $("legend").innerHTML=m.groups.map((g,i)=>sel.includes(g.k)?`<span class="k"><span class="sw" style="background:${color(i)}"></span>${esc(g.name)}</span>`:"").join("")+
-    (m.sub||m.debt?"":`<span class="k"><span class="thin"></span>${esc(m.other)}</span>`)+
+    (m.sub||m.debt||!m.other?"":`<span class="k"><span class="thin"></span>${esc(m.other)}</span>`)+
     (m.debt?"":`<span class="k"><span class="sw" style="background:var(--nodata)"></span>No breakdown available</span>`);
   const notes=[];
+  if(m.kind==="gind") notes.push("Bars show value added by industry. They add up to gross value added; the thin bar is GDP, and the gap is taxes less subsidies on products. Click a segment to see its industries.");
+  if(m.kind==="guse") notes.push("Household consumption, government consumption, investment, inventories and net exports add up to GDP. Net exports below zero (a trade deficit) are drawn to the left of the zero line.");
   if(m.debt) notes.push(ys.length>1?"Debt is a stock: bars show the level at the end of the period, the right-hand column its change since the start"+(S.unit==="pct"?" (in points of GDP).":".")+"":"Debt is a stock: bars show the level at the end of the year. Choose a period to see how it changed.");
   if(m.kind==="spend"||m.kind==="rev") notes.push(`Click a coloured segment to see that ${m.kind==="rev"?"source":"category"}'s subcategories.`);
   if(list.some(r=>r.est||r.alt)) notes.push("Rows marked “est.” are estimates; see About the data.");
   if(m.sub&&list.some(r=>!r.parts)) notes.push("Grey bars: no subcategory data for that country.");
-  if(sel.length<m.groups.length) notes.push(`Showing ${sel.length} of ${m.groups.length} ${m.catLbl.replace(/ \(.*\)$/,"").toLowerCase()}${m.sub||m.debt?"":"; the thin bar and the balance still use the full totals"}.`);
+  if(sel.length<m.groups.length) notes.push(`Showing ${sel.length} of ${m.groups.length} ${m.catLbl.replace(/ \(.*\)$/,"").toLowerCase()}${m.sub||m.debt||m.gdp?"":"; the thin bar and the balance still use the full totals"}.`);
   if(list.some(r=>r.gdpv!=null)) notes.push(`GDP column: ${gdpLabel()}, ${ys.length>1?"latest year of the period":"same year"}.`);
   if(S.sort.startsWith("c:")) notes.push(`The sorted category is drawn first, from the zero line.`);
   if(excluded.length) notes.push(`Left out for missing or incomplete data in ${period}: ${excluded.join(", ")}.`);
@@ -747,8 +794,8 @@ function drawChart(list,tot){
   const el=$("chart"), m=M();
   if(!list.length){el.innerHTML=`<div class="empty">No countries match. Pick some countries, or untick “Only countries with complete data”.</div>`;return;}
   const W=Math.max(320,el.clientWidth||900), narrow=W<600;
-  const showBal=m.debt?ys2()>1:!m.sub, rv=r=>m.debt?r.chg:r.bal;
-  const gdpW=narrow?50:78;
+  const showBal=m.gdp?false:m.debt?ys2()>1:!m.sub, rv=r=>m.debt?r.chg:r.bal;
+  const gdpW=narrow?50:92;
   const labW=narrow?96:170, balW=showBal?(narrow?92:170):0, gap=narrow?8:16, plotW=Math.max(80,W-labW-gdpW-balW-gap*(showBal?2:1)-(showBal?0:40));
   // In US$ the "all shown" total would dwarf every country, so it lives only in the summary tiles.
   const showTot=tot&&S.unit==="pct";
@@ -758,15 +805,17 @@ function drawChart(list,tot){
   // stack order: the sorted category first (so it sits on the zero line), then the rest in fixed order
   let order=m.groups.map((g,i)=>({g,i})).filter(o=>sel.includes(o.g.k));
   if(S.sort.startsWith("c:")){const k=S.sort.slice(2); order=[...order.filter(o=>o.g.k===k),...order.filter(o=>o.g.k!==k)];}
-  const max=Math.max(...rows.map(r=>Math.max(r.main??0,r.other??0)))*1.04||1;
-  const x=v=>labW+gdpW+gap+Math.max(0,v)/max*plotW;
+  // positive parts stack right from zero, negative parts (e.g. a trade deficit) stack left
+  const pos=r=>r.parts?order.reduce((a,o)=>a+Math.max(0,r.parts[o.g.k]||0),0):(r.main??0), neg=r=>r.parts?order.reduce((a,o)=>a+Math.min(0,r.parts[o.g.k]||0),0):0;
+  const max=Math.max(...rows.map(r=>Math.max(pos(r),r.other??0)))*1.04||1, min=Math.min(0,...rows.map(neg))*1.04;
+  const x=v=>labW+gdpW+gap+(v-min)/(max-min)*plotW;
   const bmax=Math.max(...rows.map(r=>Math.abs(rv(r)??0)))||1;
   const bx0=labW+gdpW+gap+plotW+gap, bmid=bx0+balW*(narrow?.5:.42), bscale=(balW*(narrow?.5:.42)-2)/bmax;
-  const ticks=niceTicks(max,narrow?3:6);
+  const ticks=niceTicks(max,narrow?3:6); if(min<0){ const st=ticks[1]-ticks[0]; for(let v=-st;v>=min-1e-9;v-=st) ticks.unshift(+v.toFixed(6)); }
   let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc($("ctitle").textContent)}"><g class="axis">`;
   for(const t of ticks){const xx=x(t); s+=`<line x1="${xx}" x2="${xx}" y1="${top-4}" y2="${H-4}" stroke="var(--grid)" stroke-width="1"/><text x="${xx}" y="${top-10}" text-anchor="${t===0?"start":"middle"}">${axisFmt(t)}</text>`;}
   if(showBal) s+=`<line x1="${bmid}" x2="${bmid}" y1="${top-4}" y2="${H-4}" stroke="var(--line)" stroke-width="1"/><text x="${bmid}" y="${top-10}" text-anchor="middle">${m.debt?"Change":"Balance"}</text>`;
-  if(gdpW) s+=`<text x="${labW+gdpW}" y="${top-10}" text-anchor="end">GDP</text>`;
+  if(gdpW) s+=`<text class="gdphead" x="${labW+gdpW}" y="${top-10}" text-anchor="end">${narrow?"GDP":"GDP (US$)"}</text>`;
   s+=`</g>`;
   rows.forEach((r,i)=>{
     const y=top+i*rowH+(i>0&&showTot?8:0), cy=y+rowH/2;
@@ -775,9 +824,10 @@ function drawChart(list,tot){
     s+=`<text class="cname" x="${labW}" y="${cy+4}" text-anchor="end">${esc(trunc(nm,narrow?14:26))}</text>`;
     if(gdpW&&r.gdpv!=null) s+=`<text class="bval gdp" x="${labW+gdpW}" y="${cy+4}" text-anchor="end">${narrow?fmtGdp(r.gdpv).replace(" ",""):fmtGdp(r.gdpv)}</text>`;
     const bh=11, by=y+4;
-    if(r.parts){ let acc=0; const segs=order.map(o=>({...o,v:r.parts[o.g.k]})).filter(o=>o.v>0);
+    if(r.parts){ let nacc=0; for(const o of order){ const v=r.parts[o.g.k]; if(v<0){ const x1=x(nacc), x0=x(nacc+v); nacc+=v; s+=`<rect x="${x0}" y="${by}" width="${Math.max(0,x1-x0-1)}" height="${bh}" fill="${color(o.i)}" opacity=".75"/>`; } }
+      let acc=0; const segs=order.map(o=>({...o,v:r.parts[o.g.k]})).filter(o=>o.v>0);
       segs.forEach((o,si)=>{const x0=x(acc), x1=x(acc+o.v); acc+=o.v; const w=Math.max(0,x1-x0-(si<segs.length-1?2:0));
-        const dv=m.kind==="spend"?o.g.fn:m.kind==="rev"?o.g.k:null, drillable=dv?` class="seg" data-d="${dv}"`:"";
+        const dv=m.kind==="spend"?o.g.fn:m.kind==="rev"?o.g.k:m.kind==="gind"&&o.g.subs.length?"g:"+o.g.k:null, drillable=dv?` class="seg" data-d="${dv}"`:"";
         s+=si===segs.length-1?roundEnd(x0,by,w,bh,color(o.i),drillable):`<rect${drillable} x="${x0}" y="${by}" width="${w}" height="${bh}" fill="${color(o.i)}"/>`;});
     } else if(r.main!=null){ s+=roundEnd(x(0),by,x(r.main)-x(0),bh,"var(--nodata)",""); }
     else if(r.full!=null){ s+=roundEnd(x(0),by,x(r.full)-x(0),bh,"var(--nodata)",""); }
@@ -811,13 +861,14 @@ function showTip(r,cx,cy){
   let h=`<h4>${esc(r.name)}</h4><div class="meta">${period} · ${unitLabel()}${r.n!=null&&r.n<r.of?` · data for ${r.n} of ${r.of} years`:""}${r.alt||r.est?" · estimate, see About the data":""}${r.gdpv!=null?`<br>${gdpLabel()}${r.gdpy&&ys.length>1?" ("+r.gdpy+")":""}: ${fmtGdp(r.gdpv)}`:""}</div><table>`;
   if(r.parts) m.groups.forEach((g,i)=>{ h+=`<tr style="${sel.includes(g.k)?"":"opacity:.45"}"><td><span class="sw" style="background:${color(i)}"></span>${esc(g.name)}</td><td class="num">${fmt(r.parts[g.k])}</td></tr>`; });
   else h+=`<tr><td colspan="2" style="color:var(--muted)">No breakdown for this period</td></tr>`;
-  if(m.debt){ h+=`<tr class="tot"><td>Total shown</td><td class="num">${fmt(r.full)}</td></tr>`+(r.chg!=null?`<tr><td>Change since ${ys[0]}</td><td class="num">${fmtChg(r.chg)}</td></tr>`:"")+(r.endY&&r.endY!==ys[ys.length-1]?`<tr><td colspan="2" style="color:var(--muted)">Latest data: ${r.endY}</td></tr>`:"")+`</table>`; }
+  if(m.gdp){ h+=`<tr class="tot"><td>${m.kind==="guse"?"GDP":m.kind==="gsub"?esc(m.name):"Gross value added"}</td><td class="num">${fmt(r.full)}</td></tr></table>`; }
+  else if(m.debt){ h+=`<tr class="tot"><td>Total shown</td><td class="num">${fmt(r.full)}</td></tr>`+(r.chg!=null?`<tr><td>Change since ${ys[0]}</td><td class="num">${fmtChg(r.chg)}</td></tr>`:"")+(r.endY&&r.endY!==ys[ys.length-1]?`<tr><td colspan="2" style="color:var(--muted)">Latest data: ${r.endY}</td></tr>`:"")+`</table>`; }
   else if(m.sub) h+=`<tr class="tot"><td>${esc(m.other)}</td><td class="num">${fmt(r.full)}</td></tr>`;
   const base=m.shareOf==="revenue"?r.rev:r.exp;
-  if(m.debt){}
+  if(m.debt||m.gdp){}
   else if(m.sub) h+=`<tr><td>Share of all government ${m.shareOf}</td><td class="num">${r.full!=null&&base?(r.full/base*100).toFixed(1)+"%":"–"}</td></tr></table>`;
   else h+=`<tr class="tot"><td>Total spending</td><td class="num">${fmt(r.exp)}</td></tr><tr><td>Total revenue</td><td class="num">${fmt(r.rev)}</td></tr><tr><td>${r.bal<0?"Deficit":"Surplus"}</td><td class="num">${fmt(r.bal,true)}</td></tr></table>`;
-  if(m.kind==="spend"||m.kind==="rev") h+=`<div class="meta" style="margin:6px 0 0">Click a segment to see its subcategories</div>`;
+  if(m.kind==="spend"||m.kind==="rev"||m.kind==="gind") h+=`<div class="meta" style="margin:6px 0 0">Click a segment to see its subcategories</div>`;
   tip.innerHTML=h; tip.hidden=false;
   const tw=tip.offsetWidth, th=tip.offsetHeight;
   let lx=cx+16, ly=cy+16; if(lx+tw>innerWidth-8) lx=cx-tw-16; if(lx<8) lx=8; if(ly+th>innerHeight-8) ly=Math.max(8,cy-th-16);
@@ -830,6 +881,8 @@ document.addEventListener("click",hideTip); addEventListener("scroll",hideTip,{p
 const gdpCell=r=>r.gdpv==null?"":String(Math.round(r.gdpv));
 function tableData(list,tot){
   const m=M(), sub=!!m.sub;
+  if(m.gdp) return {head:["Country",gdpLabel()+" (bn)",...m.groups.map(g=>g.name),m.kind==="guse"?"GDP":m.kind==="gsub"?m.name:"Gross value added","Note"],
+      rows:[tot,...list].filter(Boolean).map(r=>[r.name,gdpCell(r),...m.groups.map(g=>r.parts?r.parts[g.k]:null),r.full,""])};
   if(m.debt){ const rng=LAST&&LAST.ys.length>1;
     return {head:["Country",gdpLabel()+" (bn)",...m.groups.map(g=>g.name),"Total shown",...(rng?["Change over the period"]:[]),"Note"],
       rows:[tot,...list].filter(Boolean).map(r=>[r.name,gdpCell(r),...m.groups.map(g=>r.parts?r.parts[g.k]:null),r.full,...(rng?[r.chg]:[]),r.est&&!r.avg?"Government debt from IMF WEO":""])}; }

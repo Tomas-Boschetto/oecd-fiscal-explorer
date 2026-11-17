@@ -12,6 +12,7 @@ Reads
   data/processed/revstats_consumption_taxes.csv OECD Revenue Statistics 5111-5123 (download_sources.py)
   data/processed/argentina.json                Argentina from IMF, Argentine Ministry of Economy, SIPRI, OECD LAC (argentina.py)
   data/processed/partners.json                 China, India, Brazil, Indonesia, Saudi Arabia, South Africa from IMF and OECD (partners.py)
+  data/processed/gdp_structure.json            GDP by industry and by use, OECD National Accounts (gdp.py)
   data/processed/debt.json                     government, household and corporate debt, IMF Global Debt Database (debt.py)
   src/template.html                            the dashboard, with a __DATA__ placeholder
 
@@ -138,9 +139,20 @@ if os.path.exists(debt_path):
                 if k in d: v["d_" + k] = d[k]
             if d.get("gov_weo"): v["d_est"] = 1
 
+# ---------- GDP structure (% of GDP): by industry (gi, gs) and by use (gu) ----------
+gdp_path = f"{PROC}/gdp_structure.json"
+GDPS = json.load(open(gdp_path)) if os.path.exists(gdp_path) else {"tree": [], "use": [], "data": {}}
+for c, years in GDPS["data"].items():
+    for y, d in years.items():
+        v = V.get((c, int(y)))
+        if v is None: continue
+        if "ind" in d: v["gi"] = d["ind"]
+        if "sub" in d: v["gs"] = d["sub"]
+        if "use" in d: v["gu"] = {k: d["use"][k] for k in ("hh", "gov", "inv", "stk", "nx")}; v["gx"] = [d["use"]["exp"], d["use"]["imp"]]
+
 # ---------- outputs ----------
 rows = [{"c": a, "y": y, **v} for (a, y), v in sorted(V.items()) if "rev" in v or "exp" in v]
-out = {"names": names, "labels": labels, "rows": rows}
+out = {"names": names, "labels": labels, "gdp": {"tree": GDPS["tree"], "use": GDPS["use"]}, "rows": rows}
 os.makedirs(f"{ROOT}/data", exist_ok=True)
 json.dump(out, open(f"{ROOT}/data/explorer_data.json", "w"), separators=(",", ":"))
 t = open(f"{ROOT}/src/template.html", encoding="utf-8").read()
@@ -165,8 +177,11 @@ with open(f"{ROOT}/data/explorer_dataset.csv", "w", newline="") as fh:
         alt = bool(r.get("alt"))   # Argentina: every value comes from non-OECD sources
         SRC_NA = ("IMF Fiscal Monitor; Argentina Ministry of Economy; SIPRI; OECD Revenue Statistics LAC" if c == "ARG" else
                   "IMF Fiscal Monitor; IMF GFS (COFOG); OECD Global Revenue Statistics") if alt else "OECD National Accounts"
-        def put(group, code, name, level, val, unit="pct_gdp", est=False, src=SRC_NA):
-            if val is not None: w.writerow([c, nm, y, group, code, name, level, val, unit, int(est or alt), SRC_NA if alt else src])
+        def put(group, code, name, level, val, unit="pct_gdp", est=False, src=None, own=False):
+            # own=True: the value has its own source (GDP structure, debt), so Argentina/G20 source labels don't apply
+            if val is None: return
+            if own: w.writerow([c, nm, y, group, code, name, level, val, unit, int(est), src])
+            else: w.writerow([c, nm, y, group, code, name, level, val, unit, int(est or alt), SRC_NA if (alt or src is None) else src])
         put("total", "revenue", "Total revenue", 0, r.get("rev"))
         put("total", "spending", "Total spending", 0, r.get("exp"))
         put("total", "balance", "Net lending (+) / borrowing (-)", 0, r.get("bal"))
@@ -174,11 +189,18 @@ with open(f"{ROOT}/data/explorer_dataset.csv", "w", newline="") as fh:
         put("gdp", "gdp_usd_ppp", "GDP, US$ PPP", 0, r.get("gdp_ppp"), "usd_bn")
         put("gdp", "gdp_usd_exc", "GDP, US$ exchange rates", 0, r.get("gdp_exc"), "usd_bn")
         for fn, fname in FN.items(): put("spending", fn, fname, 1, r.get("f" + fn))
+        GSRC = "OECD National Accounts (value added by activity; GDP by expenditure)"
+        gnames = {g["k"]: g["name"] for g in GDPS["tree"]}; gnames["un"] = "Not allocated to a sector"; snames = {s["k"]: s["name"] for g in GDPS["tree"] for s in g["subs"]}
+        for k, val in (r.get("gi") or {}).items(): put("gdp_industry", k, gnames.get(k, k), 1, val, src=GSRC, own=True)
+        for k, val in (r.get("gs") or {}).items(): put("gdp_industry", k, snames.get(k, k), 2, val, src=GSRC, own=True)
+        unames = {u["k"]: u["name"] for u in GDPS["use"]}
+        for k, val in (r.get("gu") or {}).items(): put("gdp_use", k, unames.get(k, k), 1, val, src=GSRC, own=True)
+        if r.get("gx"): put("gdp_use", "exports", "Exports", 2, r["gx"][0], src=GSRC, own=True); put("gdp_use", "imports", "Imports", 2, r["gx"][1], src=GSRC, own=True)
         DSRC = "IMF Global Debt Database"
         put("debt", "government", "Government debt", 1, r.get("d_gov"), est=bool(r.get("d_est")),
-            src="IMF World Economic Outlook" if r.get("d_est") else DSRC)
-        put("debt", "households", "Household debt", 1, r.get("d_hh"), src=DSRC)
-        put("debt", "companies", "Non-financial corporate debt", 1, r.get("d_nfc"), src=DSRC)
+            src="IMF World Economic Outlook" if r.get("d_est") else DSRC, own=True)
+        put("debt", "households", "Household debt", 1, r.get("d_hh"), src=DSRC, own=True)
+        put("debt", "companies", "Non-financial corporate debt", 1, r.get("d_nfc"), src=DSRC, own=True)
         for code, val in sorted((r.get("l2") or {}).items()):
             est = code[:2] in r.get("est", [])
             put("spending", code, labels.get(code, code), 2, val, est=est, src="US: BEA / CMS shares x OECD total" if est else SRC_NA)
