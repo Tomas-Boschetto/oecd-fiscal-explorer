@@ -208,13 +208,25 @@ table.data td:first-child{font-family:var(--f-body)}
     <article class="panel doc">
       <h2>Categories</h2>
       <p>Spending follows the UN Classification of the Functions of Government (COFOG), which every country here uses, so “health” or “education” mean the same thing everywhere. Each category below lists the subcategories you can drill into. In the main spending view, environmental protection, housing and community amenities, and recreation and culture are shown together as one bar. Revenue follows the national-accounts categories.</p>
-      <p class="toc"><a href="#cat-spending">Spending categories</a> · <a href="#cat-revenue">Revenue sources</a> · <a href="#cat-balance">Balance</a> · <a href="#cat-debt">Debt</a> · <a href="#cat-gdp">GDP</a></p>
+      <p class="toc"><a href="#cat-spending">Spending categories</a> · <a href="#cat-revenue">Revenue sources</a> · <a href="#cat-balance">Balance</a> · <a href="#cat-type">Spending by type</a> · <a href="#cat-debt">Debt</a> · <a href="#cat-gdp">GDP</a></p>
       <h3 class="sect" id="cat-spending">Spending categories</h3>
       <div class="catgrid" id="catSpend"></div>
       <h3 class="sect" id="cat-revenue">Revenue sources</h3>
       <div class="catgrid" id="catRev"></div>
       <h3 class="sect" id="cat-balance">Balance</h3>
       <p>Revenue minus spending, also called net lending (+) or net borrowing (−). A negative balance is a deficit that has to be financed by borrowing or by running down assets. It applies to the government as a whole and can't be split by category.</p>
+      <h3 class="sect" id="cat-type">Spending by type</h3>
+      <p>The same total spending can be split by <i>what the money pays for</i> instead of what it is for (Spending → Detail → By type). This also shows how government spending relates to GDP: only the first three types, plus investment, are the government's own use of output. The rest passes money to households, companies or other countries, and appears in GDP when they spend it. For Finland in 2024, for example, total spending is 58% of GDP but government consumption only 26%.</p>
+      <div class="catgrid">
+        <section class="catcard"><h3>Employees' pay</h3><p>Wages and employers' social contributions of teachers, nurses, doctors, police, soldiers and civil servants.</p><p class="excl"><b>In GDP:</b> yes, as government consumption.</p></section>
+        <section class="catcard"><h3>Purchases of goods and services</h3><p>What the government buys to run its services: supplies, energy, IT, rents, consultants, outsourced cleaning or IT services.</p><p class="excl"><b>In GDP:</b> yes, as government consumption.</p></section>
+        <section class="catcard"><h3>Services bought for households</h3><p>Goods and services the government pays for on people's behalf from private providers: reimbursed medicines and doctor visits, places in private care homes or schools. In the US, Medicare and Medicaid are recorded as cash benefits instead, so this is zero there.</p><p class="excl"><b>In GDP:</b> yes, as government consumption.</p></section>
+        <section class="catcard"><h3>Cash social benefits</h3><p>Pensions, unemployment and sickness benefits, child and housing allowances, social assistance. Usually the largest type in Europe.</p><p class="excl"><b>In GDP:</b> not as government spending; counted as household consumption when people spend them.</p></section>
+        <section class="catcard"><h3>Investment</h3><p>Roads, railways, schools, hospitals, military equipment, software, and purchases of land.</p><p class="excl"><b>In GDP:</b> yes, inside “Investment (fixed capital)”, together with private investment.</p></section>
+        <section class="catcard"><h3>Interest</h3><p>Interest paid on public debt. It rises with debt and interest rates: over 4% of GDP in the US in 2023, about 1% in Finland.</p><p class="excl"><b>In GDP:</b> no; it is a payment for borrowed money, not for output.</p></section>
+        <section class="catcard"><h3>Subsidies</h3><p>Payments to producers to lower their prices or support their activity: public transport operators, farmers (outside EU direct payments recorded elsewhere), energy-price support, wage subsidies.</p><p class="excl"><b>In GDP:</b> no; they lower prices of what companies produce.</p></section>
+        <section class="catcard"><h3>Other transfers</h3><p>Contributions to the EU budget and international organisations, development aid, grants to non-profits, investment grants to companies and households, and taxes the government itself pays.</p><p class="excl"><b>In GDP:</b> no; they finance spending by others.</p></section>
+      </div>
       <h3 class="sect" id="cat-debt">Debt</h3>
       <p>Debt is a stock: what is owed at the end of a year, not what is spent or collected during it. A deficit adds to government debt; a surplus can reduce it. The Debt view splits what a country owes by who borrowed. Private debt is often larger than government debt, and both matter for financial stability.</p>
       <div class="catgrid">
@@ -267,6 +279,7 @@ table.data td:first-child{font-family:var(--f-body)}
         <li><b>Spending subcategories</b> come from OECD Table 11 (COFOG level 2), available for 37 OECD countries. Where a country's subcategories don't add up exactly to its category total, they are scaled in proportion (usually by under 0.5 points of GDP, at most 2.4). The same applies to the categories against total spending.</li>
         <li><b>Revenue subcategories</b> come from OECD Table 12. "Other revenue" is total revenue minus taxes and social contributions.</li>
         <li><b>Grey bars</b> mean the country has no breakdown for that view and year.</li>
+        <li><b>Spending by type</b> comes from OECD Table 12 (general government expenditure by transaction) for 44 countries, scaled to the same total as the other spending views. Not available for the non-OECD G20 economies.</li>
         <li><b>GDP structure</b> comes from the OECD National Accounts at current prices. <i>By industry</i>: value added by economic activity (ISIC Rev. 4), grouped into 8 sectors and about 50 industries; industries combine ISIC divisions where countries report them together. Some countries report a few sections only in combined form, so their remainder is shown in grey as “not allocated”; countries with less than 80% of value added allocated are left out. Coverage: most OECD countries plus Brazil (to 2015) and Saudi Arabia; not China, India, Indonesia, Argentina or South Africa. <i>By use</i>: GDP by expenditure, for all countries including the G20 economies. Household consumption includes non-profit institutions serving households; inventories are computed as the remainder, so they include the statistical discrepancy.</li>
         <li><b>Debt</b> comes from the IMF Global Debt Database, in % of GDP: general government gross debt, and household and non-financial corporate debt (loans and debt securities). Debt is a stock, so a period shows the level at its end and the change since its start, not a sum or average. In US$, debt is converted with the same year's GDP. Government debt here is the IMF's measure and can differ from national or EU (Maastricht) figures, mainly in how debt is valued and which liabilities are counted. It also differs from the OECD's national-accounts debt used elsewhere in the dataset.</li>
         <li><b>Coverage.</b> Most OECD countries have complete data from 1995. Recent years are missing for some (for example Japan, Canada, New Zealand), and Türkiye and Australia lack revenue detail.</li>
@@ -354,6 +367,9 @@ const RSUB={
 const DEBT=[{k:"gov",name:"Government"},{k:"hh",name:"Households"},{k:"nfc",name:"Non-financial companies"}];
 const GTREE=[...DATA.gdp.tree.map(g=>({k:g.k,name:g.name,subs:g.subs})),{k:"un",name:"Not allocated to a sector",subs:[]}];
 const GUSE=DATA.gdp.use.map(u=>({k:u.k,name:u.name}));
+const ETYPE=[
+  {k:"pay",name:"Employees' pay"},{k:"pur",name:"Purchases of goods and services"},{k:"kind",name:"Services bought for households"},
+  {k:"cash",name:"Cash social benefits"},{k:"inv",name:"Investment"},{k:"int",name:"Interest"},{k:"sub",name:"Subsidies"},{k:"oth",name:"Other transfers"}];
 const FUNCS={"01":"General public services","02":"Defence","03":"Public order and safety","04":"Economic affairs","05":"Environmental protection",
   "06":"Housing and community amenities","07":"Health","08":"Recreation, culture and religion","09":"Education","10":"Social protection"};
 const LABELS=DATA.labels;
@@ -387,7 +403,7 @@ try{const s=JSON.parse(localStorage.getItem("fbx-state")||"null"); if(s&&typeof 
 if(S.brk==="socp"){S.brk="spend";S.detail="10";}
 if(!(S.v>=3)){ if(Array.isArray(S.ctys)) for(const c of G20X) if(!S.ctys.includes(c)) S.ctys.push(c); S.v=3; }   // state saved before these economies were added
 if(!S.dsel||typeof S.dsel!=="object") S.dsel={};
-if(S.detail!=="main"&&!FUNCS[S.detail]) S.detail="main";
+if(S.detail!=="main"&&S.detail!=="type"&&!FUNCS[S.detail]) S.detail="main";
 if(!S.rdetail||(S.rdetail!=="main"&&!RSUB[S.rdetail])) S.rdetail="main";
 function save(){try{localStorage.setItem("fbx-state",JSON.stringify(S));}catch(e){}}
 
@@ -412,6 +428,7 @@ function M(){
         ?"Rows marked “est.” have sizeable retail sales or other general turnover taxes (for example US state and local sales taxes). National accounts book these with excise duties, so their size comes from OECD Revenue Statistics (latest available year carried forward up to two years) and is moved into general consumption taxes, next to VAT."
         :"Rows marked “est.”: national accounts don't separate personal and corporate income tax for these countries (including the US), so the split comes from OECD Revenue Statistics and is applied to the national-accounts total."};
   }
+  if(S.detail==="type") return {kind:"stype",key:"stype",groups:ETYPE,title:"Spending by type",other:"Total revenue",catLbl:"Spending by type",vs:"revenue"};
   if(S.detail==="main") return {kind:"spend",groups:SPEND,title:"Spending by function",other:"Total revenue",catLbl:"Spending categories",vs:"revenue"};
   const fn=S.detail, nm=FUNCS[fn];
   return {kind:"sub",sub:true,key:fn,fn,name:nm,groups:SUB[fn],title:`${nm}: subcategories`,other:`Total ${nm.toLowerCase()}`,catLbl:`${nm} subcategories (COFOG ${+fn}.x)`,vs:"",shareOf:"spending",
@@ -443,6 +460,8 @@ function yearParts(r){
       if(s>0){ const k=o.fn[fn]/s; o.sub[fn]={}; for(const g of groups) o.sub[fn][g.k]=raw[g.k]*k; }
     }
   }
+  // spending by type: scaled so the types add up to total spending
+  if(r.et&&r.exp!=null){ const s=Object.values(r.et).reduce((a,v)=>a+v,0); if(s>0){ o.etype={}; for(const k in r.et) o.etype[k]=r.et[k]*r.exp/s; } }
   o.gind=r.gi?Object.fromEntries(GTREE.map(g=>[g.k,r.gi[g.k]||0])):null; o.guse=r.gu||null; o.gsub={};
   if(r.gi&&r.gs) for(const g of GTREE){ if(g.subs.some(s=>r.gs[s.k]!=null)){ o.gsub[g.k]={}; for(const s of g.subs) o.gsub[g.k][s.k]=r.gs[s.k]??0; } }
   if(r.r_inc!=null&&r.r_prod!=null&&r.r_soc!=null)
@@ -459,6 +478,7 @@ function viewOf(p){
   const m=M();
   if(m.kind==="rev") return {parts:p.revp,full:p.rev,other:p.exp};
   if(m.kind==="spend") return {parts:p.spend,full:p.exp,other:p.rev};
+  if(m.kind==="stype") return {parts:p.etype,full:p.exp,other:p.rev};
   if(m.kind==="rsub") return {parts:p.rsub[m.rg]||null,full:p.revp?p.revp[m.rg]:null,other:null};
   if(m.kind==="gind") return {parts:p.gind,full:p.gind?Object.values(p.gind).reduce((a,v)=>a+v,0):null,other:100};
   if(m.kind==="guse") return {parts:p.guse,full:p.guse?100:null,other:null};
@@ -671,7 +691,7 @@ function syncControls(){
   $("bSpend").setAttribute("aria-pressed",S.brk==="spend"); $("bRev").setAttribute("aria-pressed",S.brk==="rev"); $("bDebt").setAttribute("aria-pressed",S.brk==="debt"); $("bGdp").setAttribute("aria-pressed",S.brk==="gdp");
   $("detail").innerHTML=S.brk==="gdp"?`<option value="ind">By industry</option><option value="use">By use (consumption, investment, trade)</option>`+GTREE.filter(g=>g.subs.length).map(g=>`<option value="g:${g.k}">Industries: ${esc(g.name)}</option>`).join(""):S.brk==="debt"?`<option value="main">All sectors</option><option value="private">Private sector only</option>`:`<option value="main">Main ${S.brk==="rev"?"sources":"categories"}</option>`+(S.brk==="rev"
     ?REV.map(g=>`<option value="${g.k}">Subcategories: ${esc(g.name)}</option>`).join("")
-    :Object.entries(FUNCS).map(([k,v])=>`<option value="${k}">Subcategories: ${esc(v)}</option>`).join(""));
+    :`<option value="type">By type (pay, purchases, benefits, interest…)</option>`+Object.entries(FUNCS).map(([k,v])=>`<option value="${k}">Subcategories: ${esc(v)}</option>`).join(""));
   $("detail").value=S.brk==="rev"?S.rdetail:S.brk==="debt"?S.ddetail:S.brk==="gdp"?S.gdetail:S.detail;
   $("back").hidden=!(m.sub||(m.debt&&S.ddetail!=="main")); $("back").textContent=S.brk==="rev"?"← All sources":S.brk==="debt"?"← All sectors":S.brk==="gdp"?"← All industries":"← All categories";
   const groups=m.groups, sel=SEL();
@@ -774,6 +794,7 @@ function render(){
     (m.sub||m.debt||!m.other?"":`<span class="k"><span class="thin"></span>${esc(m.other)}</span>`)+
     (m.debt?"":`<span class="k"><span class="sw" style="background:var(--nodata)"></span>No breakdown available</span>`);
   const notes=[];
+  if(m.kind==="stype") notes.push("Spending by what the money pays for. Only employees' pay, purchases and services bought for households (together, roughly government consumption) and investment are counted in GDP as government use; cash benefits, interest, subsidies and other transfers pass money to others. See Categories.");
   if(m.kind==="gind") notes.push("Bars show value added by industry. They add up to gross value added; the thin bar is GDP, and the gap is taxes less subsidies on products. Click a segment to see its industries.");
   if(m.kind==="guse") notes.push("Household consumption, government consumption, investment, inventories and net exports add up to GDP. Net exports below zero (a trade deficit) are drawn to the left of the zero line.");
   if(m.debt) notes.push(ys.length>1?"Debt is a stock: bars show the level at the end of the period, the right-hand column its change since the start"+(S.unit==="pct"?" (in points of GDP).":".")+"":"Debt is a stock: bars show the level at the end of the year. Choose a period to see how it changed.");

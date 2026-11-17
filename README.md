@@ -9,6 +9,8 @@ subcategories:
 - **Spending** by function (COFOG): social protection, health, education, general public services, economic affairs,
   defence, public order, and housing/environment/culture. Each splits into its official subcategories, for example
   Health into hospitals, outpatient care, medical products, public health, R&D and other.
+- **Spending by type**: employees' pay, purchases, cash benefits, services bought for households, investment, interest,
+  subsidies and other transfers (OECD Table 12), showing which parts of government spending enter GDP.
 - **Revenue** by source: income taxes, taxes on production and imports, social contributions, and other revenue.
   Each splits further, for example personal vs corporate income tax, or VAT and sales taxes vs excise.
 - **Balance**: revenue minus spending (net lending / borrowing).
@@ -63,7 +65,7 @@ Columns of `explorer_dataset.csv`:
 |---|---|
 | `country_code`, `country` | ISO 3-letter code and name. Also includes the non-OECD G20 members (ARG, BRA, CHN, IDN, IND, SAU, ZAF; all values `estimated = 1`), Russia (partial OECD data, to 2019) and aggregates (EU, EA). |
 | `year` | Calendar year. |
-| `group` | `total`, `gdp`, `spending`, `revenue`, `debt`, `gdp_industry` or `gdp_use`. |
+| `group` | `total`, `gdp`, `spending`, `spending_type`, `revenue`, `debt`, `gdp_industry` or `gdp_use`. |
 | `code` | Spending: COFOG code, `07` (level 1) or `0703` (level 2). Revenue: `inc`, `prod`, `soc` (level 1) or e.g. `income.pit` (level 2). Totals: `revenue`, `spending`, `balance`, `gross_debt` (OECD national-accounts measure). Debt: `government`, `households`, `companies` (IMF). |
 | `name` | Plain-language label. |
 | `level` | 0 = totals, 1 = main category, 2 = subcategory. |
@@ -193,6 +195,7 @@ python3 scripts/build_data.py
 python3 scripts/download_sources.py --full
 python3 scripts/extract_cofog_level2.py data/raw/DF_TABLE11.csv data/raw/GDP_USD.csv data/processed/cofog_level2.csv data/processed/cofog_labels.json
 python3 scripts/extract_revenue_detail.py data/raw/DF_TABLE12.csv data/raw/GDP_USD.csv data/processed/revenue_detail.csv
+python3 scripts/extract_spending_type.py data/raw/DF_TABLE12.csv data/raw/GDP_USD.csv data/processed/spending_by_type.csv
 python3 scripts/us_subcategories.py data/raw data/processed/us_cofog_shares.json
 python3 scripts/build_data.py
 ```
@@ -213,7 +216,7 @@ data/explorer_data.json        compact data used by the dashboard (generated)
 data/processed/                extracts from the large source tables
 data/raw/                      source downloads (not committed)
 scripts/download_sources.py    downloads the sources
-scripts/extract_*.py           extract subcategories from OECD tables 11 and 12
+scripts/extract_*.py           extract subcategories, revenue detail and spending by type from OECD tables 11 and 12
 scripts/us_subcategories.py    US subcategory shares from BEA and CMS
 scripts/argentina.py           Argentina from IMF, Ministry of Economy, SIPRI and OECD LAC
 scripts/debt.py                debt by sector from the IMF Global Debt Database

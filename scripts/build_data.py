@@ -12,6 +12,7 @@ Reads
   data/processed/revstats_consumption_taxes.csv OECD Revenue Statistics 5111-5123 (download_sources.py)
   data/processed/argentina.json                Argentina from IMF, Argentine Ministry of Economy, SIPRI, OECD LAC (argentina.py)
   data/processed/partners.json                 China, India, Brazil, Indonesia, Saudi Arabia, South Africa from IMF and OECD (partners.py)
+  data/processed/spending_by_type.csv          spending by economic type, OECD Table 12 (extract_spending_type.py)
   data/processed/gdp_structure.json            GDP by industry and by use, OECD National Accounts (gdp.py)
   data/processed/debt.json                     government, household and corporate debt, IMF Global Debt Database (debt.py)
   src/template.html                            the dashboard, with a __DATA__ placeholder
@@ -139,6 +140,14 @@ if os.path.exists(debt_path):
                 if k in d: v["d_" + k] = d[k]
             if d.get("gov_weo"): v["d_est"] = 1
 
+# ---------- spending by economic type (% of GDP) -> row "et" ----------
+st_path = f"{PROC}/spending_by_type.csv"
+ETYPES = ("pay", "pur", "kind", "cash", "inv", "int", "sub", "oth")
+if os.path.exists(st_path):
+    for r in csv.DictReader(open(st_path)):
+        v = V.get((r["REF_AREA"], int(r["YEAR"])))
+        if v is not None and int(r["YEAR"]) >= 1995: v["et"] = {k: round(float(r[k]), 3) for k in ETYPES}
+
 # ---------- GDP structure (% of GDP): by industry (gi, gs) and by use (gu) ----------
 gdp_path = f"{PROC}/gdp_structure.json"
 GDPS = json.load(open(gdp_path)) if os.path.exists(gdp_path) else {"tree": [], "use": [], "data": {}}
@@ -189,6 +198,9 @@ with open(f"{ROOT}/data/explorer_dataset.csv", "w", newline="") as fh:
         put("gdp", "gdp_usd_ppp", "GDP, US$ PPP", 0, r.get("gdp_ppp"), "usd_bn")
         put("gdp", "gdp_usd_exc", "GDP, US$ exchange rates", 0, r.get("gdp_exc"), "usd_bn")
         for fn, fname in FN.items(): put("spending", fn, fname, 1, r.get("f" + fn))
+        TN = {"pay": "Employees' pay", "pur": "Purchases of goods and services", "kind": "Services bought for households (in kind)",
+              "cash": "Cash social benefits", "inv": "Investment", "int": "Interest", "sub": "Subsidies", "oth": "Other transfers"}
+        for k, val in (r.get("et") or {}).items(): put("spending_type", k, TN[k], 1, val, src="OECD National Accounts (Table 12)", own=True)
         GSRC = "OECD National Accounts (value added by activity; GDP by expenditure)"
         gnames = {g["k"]: g["name"] for g in GDPS["tree"]}; gnames["un"] = "Not allocated to a sector"; snames = {s["k"]: s["name"] for g in GDPS["tree"] for s in g["subs"]}
         for k, val in (r.get("gi") or {}).items(): put("gdp_industry", k, gnames.get(k, k), 1, val, src=GSRC, own=True)
