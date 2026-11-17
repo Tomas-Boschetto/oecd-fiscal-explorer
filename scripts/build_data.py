@@ -11,6 +11,7 @@ Reads
   data/processed/revstats_income_tax_split.csv OECD Revenue Statistics 1100/1200/1300 (download_sources.py)
   data/processed/revstats_consumption_taxes.csv OECD Revenue Statistics 5111-5123 (download_sources.py)
   data/processed/argentina.json                Argentina from IMF, Argentine Ministry of Economy, SIPRI, OECD LAC (argentina.py)
+  data/processed/debt.json                     government, household and corporate debt, IMF Global Debt Database (debt.py)
   src/template.html                            the dashboard, with a __DATA__ placeholder
 
 Writes
@@ -115,6 +116,17 @@ if os.path.exists(arg_path):
     for y, v in json.load(open(arg_path)).items():
         if int(y) >= 1995: V[("ARG", int(y))] = v
 
+# ---------- debt by sector (% of GDP) ----------
+debt_path = f"{PROC}/debt.json"
+if os.path.exists(debt_path):
+    for c, years in json.load(open(debt_path)).items():
+        for y, d in years.items():
+            v = V.get((c, int(y)))
+            if v is None: continue
+            for k in ("gov", "hh", "nfc"):
+                if k in d: v["d_" + k] = d[k]
+            if d.get("gov_weo"): v["d_est"] = 1
+
 # ---------- outputs ----------
 rows = [{"c": a, "y": y, **v} for (a, y), v in sorted(V.items()) if "rev" in v or "exp" in v]
 out = {"names": names, "labels": labels, "rows": rows}
@@ -150,6 +162,11 @@ with open(f"{ROOT}/data/explorer_dataset.csv", "w", newline="") as fh:
         put("gdp", "gdp_usd_ppp", "GDP, US$ PPP", 0, r.get("gdp_ppp"), "usd_bn")
         put("gdp", "gdp_usd_exc", "GDP, US$ exchange rates", 0, r.get("gdp_exc"), "usd_bn")
         for fn, fname in FN.items(): put("spending", fn, fname, 1, r.get("f" + fn))
+        DSRC = "IMF Global Debt Database"
+        put("debt", "government", "Government debt", 1, r.get("d_gov"), est=bool(r.get("d_est")),
+            src="IMF World Economic Outlook" if r.get("d_est") else DSRC)
+        put("debt", "households", "Household debt", 1, r.get("d_hh"), src=DSRC)
+        put("debt", "companies", "Non-financial corporate debt", 1, r.get("d_nfc"), src=DSRC)
         for code, val in sorted((r.get("l2") or {}).items()):
             est = code[:2] in r.get("est", [])
             put("spending", code, labels.get(code, code), 2, val, est=est, src="US: BEA / CMS shares x OECD total" if est else SRC_NA)

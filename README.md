@@ -11,6 +11,7 @@ OECD countries, 1995–2024, with a drill-down from main categories to subcatego
 - **Revenue** by source: income taxes, taxes on production and imports, social contributions, and other revenue.
   Each splits further, for example personal vs corporate income tax, or VAT and sales taxes vs excise.
 - **Balance**: revenue minus spending (net lending / borrowing).
+- **Debt** by sector: government, households and non-financial companies, from the IMF Global Debt Database.
 
 Everything is general government (central, state and local government plus social security funds), on the national
 accounts basis (SNA 2008), so countries are comparable. **Argentina** is also included, built from other public
@@ -30,9 +31,9 @@ What you can do:
 
 | Control | What it does |
 |---|---|
-| **Single year / Period** | Show one year (▶ Play steps through the years) or a range such as 2015–2023. |
+| **Single year / Period** | Pick one year from the list, or a range such as 2015–2023. |
 | **Unit** | % of GDP, US$ billions at purchasing-power parity, or US$ billions at market exchange rates. Over a period, US$ figures are summed (cumulative) and % of GDP is the share of the period's combined GDP. |
-| **Break down** | Spending or Revenue. |
+| **Break down** | Spending, Revenue or Debt. For debt, a period shows the level at its end and the change since its start. |
 | **Detail** | Main categories, or the subcategories of one category. Clicking a coloured segment does the same; **← All categories** goes back. |
 | **Sort by** | Total, the comparison total, balance, name, or any single category. The category you sort by is drawn first, from the zero line. |
 | **Categories** | Turn categories or subcategories on and off. |
@@ -59,8 +60,8 @@ Columns of `explorer_dataset.csv`:
 |---|---|
 | `country_code`, `country` | ISO 3-letter code and OECD name. Also includes Argentina (ARG, all values `estimated = 1`), some other non-OECD economies (BRA, CHN, IDN, RUS, ZAF) and aggregates (EU, EA). |
 | `year` | Calendar year. |
-| `group` | `total`, `gdp`, `spending` or `revenue`. |
-| `code` | Spending: COFOG code, `07` (level 1) or `0703` (level 2). Revenue: `inc`, `prod`, `soc` (level 1) or e.g. `income.pit` (level 2). Totals: `revenue`, `spending`, `balance`, `gross_debt`. |
+| `group` | `total`, `gdp`, `spending`, `revenue` or `debt`. |
+| `code` | Spending: COFOG code, `07` (level 1) or `0703` (level 2). Revenue: `inc`, `prod`, `soc` (level 1) or e.g. `income.pit` (level 2). Totals: `revenue`, `spending`, `balance`, `gross_debt` (OECD national-accounts measure). Debt: `government`, `households`, `companies` (IMF). |
 | `name` | Plain-language label. |
 | `level` | 0 = totals, 1 = main category, 2 = subcategory. |
 | `value` | The number. |
@@ -118,6 +119,11 @@ category (see below). The CSV keeps the published values, so subcategories may d
   - Taxes: OECD Revenue Statistics in Latin America and the Caribbean, mapped to the national-accounts groups (e.g.
     the provincial turnover tax, *Ingresos Brutos*, counts as a general consumption tax; the tax on bank transactions
     and export duties as other taxes on products). "Other revenue" is the IMF total minus taxes and has no breakdown.
+- **Debt** comes from the [IMF Global Debt Database](https://www.imf.org/external/datamapper/datasets/GDD): general
+  government gross debt, and household and non-financial corporate debt (loans and debt securities), in % of GDP.
+  Mexico, New Zealand and Argentina have no government debt there, so it comes from the IMF World Economic Outlook
+  (`estimated = 1`). The IMF government-debt measure can differ from national, EU (Maastricht) and OECD
+  national-accounts figures (`gross_debt` in the dataset).
 - **What "health" and other categories cover** follows COFOG. For example, health excludes cash sickness benefits and
   much long-term care (both under social protection), and compulsory private insurance (e.g. Switzerland) is not
   government spending.
@@ -134,6 +140,13 @@ Requirements: Python 3.8 or later. No packages to install. Run all commands from
 
 ```bash
 python3 scripts/download_sources.py
+python3 scripts/build_data.py
+```
+
+**Debt** (small downloads from the IMF):
+
+```bash
+python3 scripts/debt.py
 python3 scripts/build_data.py
 ```
 
@@ -173,6 +186,7 @@ scripts/download_sources.py    downloads the sources
 scripts/extract_*.py           extract subcategories from OECD tables 11 and 12
 scripts/us_subcategories.py    US subcategory shares from BEA and CMS
 scripts/argentina.py           Argentina from IMF, Ministry of Economy, SIPRI and OECD LAC
+scripts/debt.py                debt by sector from the IMF Global Debt Database
 scripts/build_data.py          builds the dataset and the dashboard
 src/template.html              dashboard source
 ```
@@ -185,6 +199,7 @@ src/template.html              dashboard source
 | OECD Revenue Statistics | Income-tax split, sales taxes | Same as above |
 | US Bureau of Economic Analysis, NIPA table 3.16 | US spending subcategories (except health) | US government work, public domain |
 | US Centers for Medicare & Medicaid Services, National Health Expenditure Accounts | US health subcategories | US government work, public domain |
+| IMF Global Debt Database; IMF World Economic Outlook | Debt by sector (WEO for government debt of MEX, NZL, ARG) | [IMF terms](https://www.imf.org/en/About/copyright-and-terms) (reuse with attribution) |
 | IMF Fiscal Monitor and World Economic Outlook | Argentina totals and GDP | [IMF terms](https://www.imf.org/en/About/copyright-and-terms) (reuse with attribution) |
 | Argentina, Ministerio de Economía: Gasto Público Consolidado (datos.gob.ar) | Argentina spending by function | [datos.gob.ar terms](https://datos.gob.ar/acerca/seccion/terminos-y-condiciones) |
 | SIPRI Military Expenditure Database, via the World Bank | Argentina defence | [World Bank data licence](https://datacatalog.worldbank.org/public-licenses); credit SIPRI |
