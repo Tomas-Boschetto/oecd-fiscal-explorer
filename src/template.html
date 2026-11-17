@@ -52,6 +52,8 @@
 .sublist{list-style:none;padding:0!important;gap:4px!important;font-size:13.5px}
 .sublist li{display:grid;grid-template-columns:42px 1fr;gap:8px}
 .excl{font-size:13px;color:var(--muted)}
+.sublist .sd{display:block;color:var(--fg2);font-size:13px;line-height:1.5}
+.sublist li{padding:4px 0}
 @media (max-width:640px){.doctable tbody th{width:110px}.doc{padding:16px}}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.45}
@@ -344,6 +346,7 @@ const S={mode:"single",year:2023,from:2015,to:2023,unit:"pct",brk:"spend",detail
   spend:SPEND.map(g=>g.k),rev:REV.map(g=>g.k),dsel:{},ctys:[...BASE],partners:false,complete:true,table:false};
 try{const s=JSON.parse(localStorage.getItem("fbx-state")||"null"); if(s&&typeof s==="object") Object.assign(S,s);}catch(e){}
 if(S.brk==="socp"){S.brk="spend";S.detail="10";}
+if(!(S.v>=2)){ if(Array.isArray(S.ctys)&&!S.ctys.includes("ARG")) S.ctys.push("ARG"); S.v=2; }   // state saved before Argentina was added
 if(!S.dsel||typeof S.dsel!=="object") S.dsel={};
 if(S.detail!=="main"&&!FUNCS[S.detail]) S.detail="main";
 if(!S.rdetail||(S.rdetail!=="main"&&!RSUB[S.rdetail])) S.rdetail="main";
@@ -451,26 +454,98 @@ const FN_DESC={
   "10":{d:"Cash benefits and social services: pensions, disability and sickness benefits, survivors' benefits, family and child benefits, unemployment benefits, housing allowances and social assistance.",x:"Health care (health); public-sector employees' wages unrelated to benefits."}
 };
 const SUB_DESC={
-  "0101":"Parliaments, executives, tax collection, financial management, foreign affairs","0102":"Development aid to other countries","0103":"Statistics, central personnel and planning services","0104":"Research not tied to a specific function","0105":"Research on general public services","0106":"Other general services","0107":"Interest on public debt","0108":"Transfers between levels of government (usually near zero once consolidated)",
-  "0201":"Armed forces","0202":"Civil defence","0203":"Military aid to other countries","0204":"Defence research","0205":"Other defence",
-  "0301":"Police","0302":"Fire brigades","0303":"Courts","0304":"Prisons","0305":"Research","0306":"Other public order and safety",
-  "0401":"Economic and labour-market administration","0402":"Agriculture, forestry, fishing","0403":"Fuel and energy, including energy subsidies","0404":"Mining, manufacturing and construction","0405":"Roads, railways, public transport, ports and airports","0406":"Post and telecommunications","0407":"Tourism, trade and other industries","0409":"Other economic affairs (and economic research)",
-  "0501":"Waste collection and treatment","0502":"Sewage and waste water","0503":"Pollution control","0504":"Nature and landscape protection","0505":"Research","0506":"Other environmental protection",
-  "0601":"Building and supporting housing","0602":"Urban and community development","0603":"Water supply","0604":"Street lighting","0605":"Research","0606":"Other",
-  "0701":"Medicines, appliances and equipment","0702":"Doctors, dentists and other outpatient care","0703":"Hospitals, nursing and convalescent homes","0704":"Vaccination, screening, disease prevention","0705":"Health research","0706":"Health administration and other",
-  "0801":"Sports and recreation","0802":"Museums, libraries, theatres and other culture","0803":"Public broadcasting and publishing","0804":"Religious and community organisations","0805":"Research","0806":"Other",
-  "0901":"Pre-school and primary schools","0902":"Secondary schools","0903":"Post-secondary non-tertiary education","0904":"Universities and other tertiary education","0905":"Education not tied to a level","0906":"School transport, meals and other services","0907":"Education research","0908":"Other education",
-  "1001":"Sickness and disability benefits and care","1002":"Old-age pensions and elderly care","1003":"Survivors' pensions","1004":"Child benefits, parental leave, childcare","1005":"Unemployment benefits","1006":"Housing allowances paid to households","1007":"Social assistance, minimum income, homelessness, help for refugees and immigrants. Not a pure measure of migration spending.","1009":"Other social protection (and research)"
+  "0101":"Parliament and ministers' offices, the tax agency, the treasury and budget office, and the diplomatic service with its embassies.",
+  "0102":"Development aid paid to other countries, such as grants for health or infrastructure programmes abroad. Contributions to international development banks also go here.",
+  "0103":"Back-office services for the whole government, such as the national statistics office, central personnel management and government-wide IT or procurement.",
+  "0104":"Research not tied to any one policy area, for example funding for national research councils or academies of sciences.",
+  "0105":"Research on how government itself works, for example studies on public administration or tax systems. Usually tiny.",
+  "0106":"General services that fit nowhere else, such as running elections or national archives.",
+  "0107":"Interest on government debt, plus fees for issuing and managing it. It rises with debt and interest rates, as in Italy or the US after 2022. Repaying the debt itself is not spending.",
+  "0108":"Grants from one level of government to another, such as revenue sharing with regions. In consolidated accounts these mostly cancel out, so the figure is usually near zero.",
+  "0201":"Soldiers' pay, weapons, vehicles, bases and military operations, including peacekeeping missions.",
+  "0202":"Preparing for disasters and emergencies on the civilian side, such as emergency shelters, civil protection agencies and drills.",
+  "0203":"Military aid to allies, such as equipment or training given to another country's forces (for example aid to Ukraine since 2022).",
+  "0204":"Research and development on weapons and defence technology.",
+  "0205":"Other defence, such as defence ministry administration not attributed elsewhere.",
+  "0301":"Patrols, criminal investigation, traffic police, and in many countries border and coast guards.",
+  "0302":"Fire brigades and fire prevention, including forest-fire fighting.",
+  "0303":"Judges, prosecutors in some countries, legal aid and tribunals.",
+  "0304":"Prisons and other detention and rehabilitation of offenders.",
+  "0305":"Research on crime, policing and justice.",
+  "0306":"Other public order spending, such as regulators for public safety or drug-control programmes.",
+  "0401":"Competition authorities, consumer protection, trade promotion, employment services administration and regulation of business.",
+  "0402":"Farm subsidies (including EU Common Agricultural Policy payments), veterinary services, forest management, fishing quotas and inspection.",
+  "0403":"Support for electricity, gas and fuel production or prices, nuclear and renewable programmes. Energy-price subsidies after 2022 pushed this up sharply in many European countries.",
+  "0404":"Industrial policy, subsidies to factories or strategic industries, building-code enforcement.",
+  "0405":"Building and maintaining roads and railways, subsidies to buses, trains and metros, ports, airports and airlines. Often the largest part of economic affairs.",
+  "0406":"Postal services and telecommunications, such as rural broadband programmes or support for the postal operator.",
+  "0407":"Tourism promotion, retail and distribution, hotels and restaurants, multi-purpose development projects.",
+  "0409":"Other economic support not classified above, including economic research. COVID-19 business support was often recorded here.",
+  "0501":"Collecting, sorting, recycling and disposing of household and business waste.",
+  "0502":"Sewers and treatment of waste water.",
+  "0503":"Air quality monitoring, noise reduction, soil clean-up, climate programmes.",
+  "0504":"National parks, nature reserves, protection of endangered species and landscapes.",
+  "0505":"Environmental research.",
+  "0506":"Other environmental spending, such as environment ministries' administration.",
+  "0601":"Social or public housing construction, subsidies to builders, slum clearance. Rent allowances paid to people are under social protection (10.6) instead.",
+  "0602":"Town planning, regeneration of neighbourhoods, community facilities.",
+  "0603":"Building and running water supply systems.",
+  "0604":"Street lighting.",
+  "0605":"Research on housing and community development.",
+  "0606":"Other community amenities not classified above.",
+  "0701":"Medicines, glasses, hearing aids, wheelchairs and other medical products paid for by government or public insurance, mostly prescriptions bought by patients at pharmacies.",
+  "0702":"GPs and specialists' practices, dentists, physiotherapists, nurses and home health visits.",
+  "0703":"Hospitals, both general and specialist, plus nursing and convalescent homes that provide medical care. Usually the largest part of health spending.",
+  "0704":"Vaccination campaigns, screening programmes, disease surveillance, blood banks and epidemic response (for example COVID-19 testing).",
+  "0705":"Medical and health research, such as public funding for clinical research institutes.",
+  "0706":"Health ministry, insurance administration, regulation of medicines and health services.",
+  "0801":"Public sports facilities, swimming pools, parks and support for sports clubs and events.",
+  "0802":"Museums, libraries, theatres, concert halls, heritage and monument protection, support for artists and festivals.",
+  "0803":"Public broadcasting and publishing, such as the BBC, ARD/ZDF or RAI, and subsidies to the press.",
+  "0804":"Support for churches, religious organisations and community or youth associations. In some countries (for example Germany or Denmark) church taxes collected by the state show up partly here.",
+  "0805":"Research on culture and recreation.",
+  "0806":"Other culture and recreation not classified above.",
+  "0901":"Teachers' pay, buildings and materials. For the US and Argentina this line also includes secondary schools, which they don't report separately.",
+  "0902":"Lower and upper secondary schools, including vocational and technical schools at that level.",
+  "0903":"Programmes between school and university, such as some vocational certificates and pre-university courses.",
+  "0904":"Universities, colleges and other higher education, including university research funded through teaching budgets.",
+  "0905":"Education not tied to a level, such as adult literacy or second-chance programmes.",
+  "0906":"School transport, school meals, health checks at school and student accommodation.",
+  "0907":"Research on education.",
+  "0908":"Other education spending not classified by level, such as ministry administration or exams and inspection.",
+  "1001":"Sick pay, disability pensions, care allowances and services for disabled people (for example assisted living).",
+  "1002":"Retirement pensions, early-retirement schemes and care for the elderly, such as home help and nursing homes outside the health system. Usually the largest item of all government spending.",
+  "1003":"Widows' and orphans' pensions and funeral grants.",
+  "1004":"Child benefits, maternity and parental leave pay, childcare and day-care subsidies, child protection services.",
+  "1005":"Unemployment insurance and assistance, redundancy pay and, in many countries, job-retention schemes such as short-time work during COVID-19.",
+  "1006":"Housing benefits paid to households, such as rent allowances. Building social housing is under housing and community amenities (6.1) instead.",
+  "1007":"Help for people at risk of poverty or exclusion: minimum-income or social-assistance benefits, homeless shelters, addiction services, and reception and support of refugees and asylum seekers. A rise can reflect a recession or a refugee inflow, so it is not a pure measure of migration spending.",
+  "1009":"Other social protection, such as administration of social programmes, plus social protection research (10.8)."
 };
 const REV_DESC={
-  inc:{d:"Taxes on what people and companies earn or own (national-accounts category D5).",parts:{pit:"Taxes on individuals' income and capital gains",cit:"Taxes on company profits",oti:"Other current taxes on income and wealth, such as net-wealth taxes and some household property taxes"}},
-  prd:{d:"Taxes on producing, selling and importing goods and services (D2).",parts:{gct:"VAT, plus retail sales and general turnover taxes so countries without VAT (the US) compare fairly",otp:"Excise duties on fuel, tobacco and alcohol, customs and export duties, financial-transaction taxes",opr:"Taxes on production not tied to products: business property taxes, payroll taxes, licences"}},
-  ssc:{d:"Compulsory contributions to social insurance such as pensions, health and unemployment insurance (D61).",parts:{sce:"Paid by employers",sch:"Paid by employees and the self-employed",sci:"Imputed: notional contributions for benefits governments pay directly, mainly to their own employees"}},
-  oth:{d:"Everything that is not a tax or social contribution.",parts:{sal:"Sales of goods and services, fees and user charges",int:"Interest received",pin:"Dividends from public companies, rents, resource royalties",trf:"Transfers received from abroad or other sectors (for example EU funds) and subsidies received",cpt:"Inheritance and gift taxes",kot:"Other capital transfers received"}}
+  inc:{d:"Taxes on what people and companies earn or own (national-accounts category D5). Usually collected through withholding from wages and through annual tax returns.",parts:{
+    pit:"Taxes on people's wages, pensions, business income, interest, dividends and capital gains, such as the US federal and state income tax or the UK income tax.",
+    cit:"Taxes on company profits. It swings with the business cycle and, in countries like Norway or Chile, with oil or copper prices.",
+    oti:"Other current taxes on income and wealth: annual taxes on net wealth (Switzerland, Spain, Argentina's Bienes Personales), some household property taxes and income taxes that can't be split."}},
+  prd:{d:"Taxes on producing, selling and importing goods and services (D2). They are paid by businesses but usually passed on in prices.",parts:{
+    gct:"Broad taxes on consumption: VAT (or GST) in almost every country, plus retail sales taxes and general turnover taxes where those are used instead (US state sales taxes, Argentina's provincial Ingresos Brutos).",
+    otp:"Taxes on specific products: excise duties on fuel, tobacco and alcohol, customs and export duties, taxes on bank or stock transactions, and environmental levies on products.",
+    opr:"Taxes on producing at all, whatever is sold: business property taxes, payroll taxes not linked to benefits, business licences and vehicle taxes on companies."}},
+  ssc:{d:"Compulsory payments to social insurance that give a right to benefits, such as pensions, health insurance and unemployment insurance (D61).",parts:{
+    sce:"Paid by employers on top of wages, such as the employer part of US Social Security and Medicare, or German employer contributions.",
+    sch:"Deducted from employees' wages or paid by the self-employed. High in Germany or the Netherlands, close to zero where benefits are paid from general taxes, as in Australia or Denmark.",
+    sci:"Imputed: a notional amount for pensions and benefits that governments pay directly to their own employees instead of through a fund. It is a bookkeeping entry, not cash collected."}},
+  oth:{d:"Everything that is not a tax or social contribution. It is large where governments own resource companies or charge fees for services.",parts:{
+    sal:"Sales of goods and services and fees: tuition fees, hospital co-payments, public transport fares, entry tickets, passport and licence fees.",
+    int:"Interest earned on government deposits, loans and bond holdings.",
+    pin:"Dividends from public companies and central banks, rents and royalties from oil, gas or minerals. Norway's oil fund income is the largest example.",
+    trf:"Money received from abroad or other sectors, such as EU funds for member states, fines and penalties, and other current transfers.",
+    cpt:"Taxes on inheritances, gifts and other capital transfers.",
+    kot:"Other one-off capital transfers received, such as EU investment grants or payments from companies to the state."}}
 };
 function buildCategories(){
   const card=(title,code,desc,items,excl)=>`<section class="catcard"><h3>${esc(title)}${code?` <span class="code">${code}</span>`:""}</h3><p>${desc}</p>`+
-    `<ul class="sublist">${items.map(([c,n,d])=>`<li><span class="code">${c}</span><span><b>${esc(n)}</b>${d?` · ${esc(d)}`:""}</span></li>`).join("")}</ul>`+
+    `<ul class="sublist">${items.map(([c,n,d])=>`<li><span class="code">${c}</span><span><b>${esc(n)}</b>${d?`<span class="sd">${esc(d)}</span>`:""}</span></li>`).join("")}</ul>`+
     (excl?`<p class="excl"><b>Not included:</b> ${excl}</p>`:"")+`</section>`;
   const spend=Object.entries(FUNCS).map(([fn,nm])=>card(nm,`COFOG ${+fn}`,FN_DESC[fn].d,
     Object.keys(LABELS).filter(c=>c.length===4&&c.startsWith(fn)).sort().map(c=>[`${+fn}.${+c.slice(2)}`,LABELS[c],SUB_DESC[c]||""]),FN_DESC[fn].x)).join("");
