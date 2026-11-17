@@ -10,6 +10,7 @@ Reads
   data/processed/revenue_detail.csv            revenue detail from OECD Table 12 (extract_revenue_detail.py)
   data/processed/revstats_income_tax_split.csv OECD Revenue Statistics 1100/1200/1300 (download_sources.py)
   data/processed/revstats_consumption_taxes.csv OECD Revenue Statistics 5111-5123 (download_sources.py)
+  data/processed/argentina.json                Argentina from IMF, Argentine Ministry of Economy, SIPRI, OECD LAC (argentina.py)
   src/template.html                            the dashboard, with a __DATA__ placeholder
 
 Writes
@@ -107,6 +108,13 @@ for key, v in V.items():
                 v["inc_est"] = 1; n_est += 1
     if rd: v["rd"] = {k: round(x, 3) for k, x in rd.items()}; n_rd += 1
 
+# ---------- Argentina (not in OECD national accounts; built by argentina.py from other sources) ----------
+arg_path = f"{PROC}/argentina.json"
+if os.path.exists(arg_path):
+    names["ARG"] = "Argentina"
+    for y, v in json.load(open(arg_path)).items():
+        if int(y) >= 1995: V[("ARG", int(y))] = v
+
 # ---------- outputs ----------
 rows = [{"c": a, "y": y, **v} for (a, y), v in sorted(V.items()) if "rev" in v or "exp" in v]
 out = {"names": names, "labels": labels, "rows": rows}
@@ -125,14 +133,16 @@ RDN = {"pit": ("income", "Personal income taxes"), "cit": ("income", "Corporate 
        "sch": ("social_contributions", "Employees' and self-employed contributions"), "sci": ("social_contributions", "Imputed contributions"),
        "sal": ("other", "Sales of goods and services, fees"), "int": ("other", "Interest received"), "pin": ("other", "Other property income"),
        "trf": ("other", "Transfers received"), "cpt": ("other", "Capital taxes"), "kot": ("other", "Other capital transfers")}
-SRC_NA, SRC_RS = "OECD National Accounts", "OECD National Accounts + OECD Revenue Statistics"
+SRC_RS = "OECD National Accounts + OECD Revenue Statistics"
 with open(f"{ROOT}/data/explorer_dataset.csv", "w", newline="") as fh:
     w = csv.writer(fh)
     w.writerow(["country_code", "country", "year", "group", "code", "name", "level", "value", "unit", "estimated", "source"])
     for r in rows:
         c, y, nm = r["c"], r["y"], names.get(r["c"], r["c"])
+        alt = bool(r.get("alt"))   # Argentina: every value comes from non-OECD sources
+        SRC_NA = "IMF Fiscal Monitor; Argentina Ministry of Economy; SIPRI; OECD Revenue Statistics LAC" if alt else "OECD National Accounts"
         def put(group, code, name, level, val, unit="pct_gdp", est=False, src=SRC_NA):
-            if val is not None: w.writerow([c, nm, y, group, code, name, level, val, unit, int(est), src])
+            if val is not None: w.writerow([c, nm, y, group, code, name, level, val, unit, int(est or alt), SRC_NA if alt else src])
         put("total", "revenue", "Total revenue", 0, r.get("rev"))
         put("total", "spending", "Total spending", 0, r.get("exp"))
         put("total", "balance", "Net lending (+) / borrowing (-)", 0, r.get("bal"))

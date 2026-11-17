@@ -13,7 +13,8 @@ OECD countries, 1995–2024, with a drill-down from main categories to subcatego
 - **Balance**: revenue minus spending (net lending / borrowing).
 
 Everything is general government (central, state and local government plus social security funds), on the national
-accounts basis (SNA 2008), so countries are comparable.
+accounts basis (SNA 2008), so countries are comparable. **Argentina** is also included, built from other public
+sources because it isn't in the OECD national accounts (see *Method*); treat its figures as approximate.
 
 The whole dashboard is one file, `index.html`, with the data built in. It runs offline in any modern browser and
 needs no server, account or installation.
@@ -39,6 +40,8 @@ What you can do:
 | **Only countries with complete data** | Hide countries missing any year in the chosen period. The excluded countries are listed under the chart. |
 | **Show as table / Copy data as CSV** | See or copy the exact numbers behind the current view. |
 
+The dashboard has three tabs: **Explorer** (the chart), **Categories** (what each spending category, revenue source and subcategory contains) and **About the data** (how to use it, method, estimates, sources and licences).
+
 In the main views, a thin dark bar under each country shows the other side of the budget (revenue under spending,
 spending under revenue), and the right-hand column shows the balance. Subcategory views show only the breakdown.
 
@@ -54,7 +57,7 @@ Columns of `explorer_dataset.csv`:
 
 | Column | Meaning |
 |---|---|
-| `country_code`, `country` | ISO 3-letter code and OECD name. Also includes some non-OECD economies (BRA, CHN, IDN, RUS, ZAF) and aggregates (EU, EA). |
+| `country_code`, `country` | ISO 3-letter code and OECD name. Also includes Argentina (ARG, all values `estimated = 1`), some other non-OECD economies (BRA, CHN, IDN, RUS, ZAF) and aggregates (EU, EA). |
 | `year` | Calendar year. |
 | `group` | `total`, `gdp`, `spending` or `revenue`. |
 | `code` | Spending: COFOG code, `07` (level 1) or `0703` (level 2). Revenue: `inc`, `prod`, `soc` (level 1) or e.g. `income.pit` (level 2). Totals: `revenue`, `spending`, `balance`, `gross_debt`. |
@@ -101,6 +104,20 @@ category (see below). The CSV keeps the published values, so subcategories may d
     sales taxes) with excise duties. For comparability, sales and other general turnover taxes (Revenue Statistics
     5112 + 5113) are moved next to VAT. Revenue Statistics lags by a year or two, so its latest ratio is carried
     forward for up to two years.
+- **Argentina** is not an OECD member and is missing from the OECD national accounts, so all its values are marked
+  `estimated = 1` and come from:
+  - Totals (revenue, spending, balance, gross debt) and GDP in US$: [IMF Fiscal Monitor / World Economic Outlook](https://www.imf.org/external/datamapper/),
+    general government, 1995–2024 (later IMF years are projections and are left out).
+  - Spending by function: Argentina's Ministry of Economy, [Gasto Público Consolidado](https://datos.gob.ar/dataset/sspm-gasto-publico-consolidado)
+    (nation, provinces and municipalities), up to 2023, mapped to COFOG. Its total is higher than the IMF's
+    (41.9% vs 37.3% of GDP in 2023, a difference in coverage), so only its shares are used and they are scaled to the
+    IMF total. Defence and security are one line there: defence is taken from SIPRI military expenditure
+    ([World Bank API](https://data.worldbank.org/indicator/MS.MIL.XPND.GD.ZS)) and the rest is counted as police and
+    public order. Health has no subcategories; water and sewerage are shown under water supply; municipal urban services
+    under waste management.
+  - Taxes: OECD Revenue Statistics in Latin America and the Caribbean, mapped to the national-accounts groups (e.g.
+    the provincial turnover tax, *Ingresos Brutos*, counts as a general consumption tax; the tax on bank transactions
+    and export duties as other taxes on products). "Other revenue" is the IMF total minus taxes and has no breakdown.
 - **What "health" and other categories cover** follows COFOG. For example, health excludes cash sickness benefits and
   much long-term care (both under social protection), and compulsory private insurance (e.g. Switzerland) is not
   government spending.
@@ -117,6 +134,13 @@ Requirements: Python 3.8 or later. No packages to install. Run all commands from
 
 ```bash
 python3 scripts/download_sources.py
+python3 scripts/build_data.py
+```
+
+**Argentina** (small downloads from the IMF, datos.gob.ar, the World Bank and the OECD):
+
+```bash
+python3 scripts/argentina.py
 python3 scripts/build_data.py
 ```
 
@@ -148,6 +172,7 @@ data/raw/                      source downloads (not committed)
 scripts/download_sources.py    downloads the sources
 scripts/extract_*.py           extract subcategories from OECD tables 11 and 12
 scripts/us_subcategories.py    US subcategory shares from BEA and CMS
+scripts/argentina.py           Argentina from IMF, Ministry of Economy, SIPRI and OECD LAC
 scripts/build_data.py          builds the dataset and the dashboard
 src/template.html              dashboard source
 ```
@@ -160,7 +185,11 @@ src/template.html              dashboard source
 | OECD Revenue Statistics | Income-tax split, sales taxes | Same as above |
 | US Bureau of Economic Analysis, NIPA table 3.16 | US spending subcategories (except health) | US government work, public domain |
 | US Centers for Medicare & Medicaid Services, National Health Expenditure Accounts | US health subcategories | US government work, public domain |
+| IMF Fiscal Monitor and World Economic Outlook | Argentina totals and GDP | [IMF terms](https://www.imf.org/en/About/copyright-and-terms) (reuse with attribution) |
+| Argentina, Ministerio de Economía: Gasto Público Consolidado (datos.gob.ar) | Argentina spending by function | [datos.gob.ar terms](https://datos.gob.ar/acerca/seccion/terminos-y-condiciones) |
+| SIPRI Military Expenditure Database, via the World Bank | Argentina defence | [World Bank data licence](https://datacatalog.worldbank.org/public-licenses); credit SIPRI |
+| OECD Revenue Statistics in Latin America and the Caribbean | Argentina taxes | OECD terms (CC BY 4.0) |
 
 When you reuse the data, credit the original sources (e.g. "Source: OECD; US detail: BEA, CMS; compiled by
 OECD Fiscal Balance Explorer"). The code in this repository is released under the MIT licence (see `LICENSE`).
-This is an independent project and is not affiliated with or endorsed by the OECD, BEA or CMS.
+This is an independent project and is not affiliated with or endorsed by the OECD, BEA, CMS, the IMF, SIPRI or the Argentine government.
